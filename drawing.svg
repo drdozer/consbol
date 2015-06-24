@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="svg2" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="29.071mm" width="57.575mm" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 204.00484 103.00752" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <defs id="defs4">
+  <clipPath id="clipPath4190" clipPathUnits="userSpaceOnUse">
+   <path id="path4192" d="m0 0h163v82h-163v-82z"/>
+  </clipPath>
+  <mask id="mask4198" height="1" width="1" y="0" x="0" maskUnits="userSpaceOnUse">
+   <image id="image4200" width="1" preserveAspectRatio="none" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIkAAAAZCAAAAAAgKVJWAAAAAXNCSVQI5gpbmQAAANZJREFUSIntlMuOwjAMRZ1HmzANFI3E/38hElAypIljz5aWbjFCyll6deR7bYBGo/HdqI2RVkAkbmJePEw//NgPmNiVh7Y+HGw8Y/2siTYuHEePxdiN2N4HMS9NdB/G34PHSe0My3kwlRn52UR1+9NpdPTo9l6yJ1ymS12aGDeEncm6Aye4EuBcjFqkw/i4OfCE81+WLCxjLLwyuVO6Hz3VeE2SSyHMq8ZSrnOcxgFgjqJXzOvbAa6ppBj6hFX8n7y8DaVtb2sqkulsmwAopZnERRqNL+Mf42pgUXmHlVsAAAAASUVORK5CYII=" height="1"/>
+  </mask>
+  <mask id="mask4218" height="1" width="1" y="0" x="0" maskUnits="userSpaceOnUse">
+   <image id="image4220" width="1" preserveAspectRatio="none" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKMAAAAaCAAAAAD+wrPhAAAAAXNCSVQI5gpbmQAAAOdJREFUWIXt1stuwyAQQNEZHsXETkOkqv//gZUSJa0p4GG66KLYSdaglLuD1RHiBdDr9f5BiLUFm+R2AqW8mavcxoNS7ybDVAfzIFUOEJXZvw7hI+VannuVRpRmPLiRz0oBVxOtYs5cGoXeuaOzPMMAjawj5xASl0b79n60ENVkcivLGC8noj8jCmXsoDJKLRohAotvUe5HzuHyAqNcwqdfGkHyMqfVfiSfw5ebFMfzTI0gM62NTD75q9srIJ8aMQLDygjMiaK/2iVSK4cGAAC2bzNKrSHGRu6e327/DwKBmyL2er0n7Afgi15q+SAwLQAAAABJRU5ErkJggg==" height="1"/>
+  </mask>
+ </defs>
+ <metadata id="metadata7">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g id="layer1" transform="translate(-218 -423.72)">
+  <g id="g4182" transform="matrix(1.25 -.0031156 -.0031156 -1.25 218.25 526.72)">
+   <g id="g4186">
+    <g id="g4188" clip-path="url(#clipPath4190)">
+     <path id="path4194" d="m0 82h163v-82h-163v82z" fill-opacity="0"/>
+     <g id="g4196" transform="matrix(137,0,0,25,26,0)">
+      <image id="image4202" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIkAAAAZCAYAAAAFQg2KAAAABHNCSVQICAgIfAhkiAAAAFhJREFUaIHt0jEBwCAQwMAH/55bB2SE4U5BhqyZ+QYO9u0A3mcSkklIJiGZhGQSkklIJiGZhGQSkklIJiGZhGQSkklIJiGZhGQSkklIJiGZhGQSkklIJiH92L8BMeN8m88AAAAASUVORK5CYII=" mask="url(#mask4198)" transform="matrix(1,0,0,-1,0,1)" height="1" width="1" preserveAspectRatio="none"/>
+     </g>
+     <g id="g4204" transform="matrix(-.000078740 0 0 -.000078740 159.76 13.154)">
+      <path id="path4206" stroke-linejoin="round" d="m-0.074585-0.0091248 1.5092e6 0.98104" stroke="#a74a44" stroke-miterlimit="10" stroke-width="25400" fill="none"/>
+     </g>
+     <path id="path4208" d="m38.939 13.153 7.4808-4.3638c0.47705-0.27828 1.0894-0.11714 1.3676 0.35991 0.27828 0.47705 0.11715 1.0894-0.35991 1.3677l-4.5192 2.6362 4.5192 2.6362c0.47705 0.27828 0.63819 0.8906 0.35991 1.3676-0.27829 0.47705-0.8906 0.63819-1.3677 0.35991l-7.4808-4.3638z" fill-rule="evenodd" fill="#a74a44"/>
+     <g id="g4210" transform="translate(76.907 38.54)">
+      <text id="text4212" font-size="14px" transform="matrix(1 0 0 -1 14.787 -14)" font-family="Arial" fill="#000000">
+       <tspan id="tspan4214" y="0" x="0 8.5651999">A</tspan>
+      </text>
+     </g>
+     <g id="g4216" transform="matrix(163,0,0,26,3.515544e-6,38)">
+      <image id="image4222" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKMAAAAaCAYAAADbqew9AAAABHNCSVQICAgIfAhkiAAAAGJJREFUeJzt0jEBACAMwLCBf89woYEeiYIeXTNzBgL27wB4zEiGGckwIxlmJMOMZJiRDDOSYUYyzEiGGckwIxlmJMOMZJiRDDOSYUYyzEiGGckwIxlmJMOMZJiRDDOSYUYyLg6fATMrPL7/AAAAAElFTkSuQmCC" mask="url(#mask4218)" transform="matrix(1,0,0,-1,0,1)" height="1" width="1" preserveAspectRatio="none"/>
+     </g>
+     <g id="g4224" transform="matrix(-.000078740 0 0 -.000078740 159.76 52.276)">
+      <path id="path4226" stroke-linejoin="round" d="m-0.074585-0.026001 1.8603e6 0.96893" stroke="#a74a44" stroke-miterlimit="10" stroke-width="25400" fill="none"/>
+     </g>
+     <path id="path4228" d="m11.291 52.276 7.4808-4.3638c0.47705-0.27828 1.0894-0.11715 1.3676 0.3599 0.27828 0.47706 0.11715 1.0894-0.35991 1.3676l-4.5192 2.6362 4.5192 2.6362c0.47705 0.27828 0.63819 0.8906 0.35991 1.3676-0.27828 0.47705-0.8906 0.63819-1.3676 0.3599l-7.481-4.364z" fill-rule="evenodd" fill="#a74a44"/>
+     <g id="g4230" transform="translate(56.3 77.663)">
+      <text id="text4232" font-size="14px" transform="matrix(1 0 0 -1 11.668 -14)" font-family="Arial" fill="#000000">
+       <tspan id="tspan4234" y="0" x="0 9.3380003">B</tspan>
+      </text>
+     </g>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>
