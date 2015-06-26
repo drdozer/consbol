@@ -1,0 +1,111 @@
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../table.css">
+
+</head>
+
+<body>
+
+<table>
+    <tr>
+        <th colspan="6" class="header"> A within B</th>
+
+    </tr>
+    <tr>
+        <th colspan="6" class="example"></th>
+    </tr>
+    <tr>
+        <td rowspan="6"><img src="within_s_base.svg"/></td>
+    </tr>
+
+    <tr>
+        <th>A</th>
+        <th>B</th>
+        <th>Stranded Orientation</th>
+        <th>Index Constraint</th>
+        <th>Strand Constraint</th>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="positive">P</td>
+        <td><img src="within_s_1.svg"/></td>
+        <td>A within B</td>
+        <td>A same_strand_as B</td>
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="negative">N</td>
+        <td><img src="within_s_2.svg"/></td>
+        <td> A within B</td>
+        <td>A same_strand_as B</td>
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="negative">N</td>
+        <td colspan="3"> N/A</td>
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="positive">P</td>
+        <td colspan="3"> N/A</td>
+
+
+    </tr>
+</table>
+<hr/>
+<table>
+    <tr>
+        <th colspan="6" class="header">A within B</th>
+
+    </tr>
+    <tr>
+        <th colspan="6" class="example">Example:</th>
+    </tr>
+    <tr>
+        <td rowspan="6"><img src="within_o_base.svg"/></td>
+    </tr>
+
+    <tr>
+        <th>A</th>
+        <th>B</th>
+        <th>Stranded Orientation</th>
+        <th>Index Constraint</th>
+        <th>Strand Constraint</th>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="positive">P</td>
+        <td colspan="3"> N/A</td>
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="negative">N</td>
+        <td colspan="3"> N/A</td>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="negative">N</td>
+
+        <td><img src="within_s_o_2.svg"/></td>
+        <td> A within B</td>
+        <td>A opposite_strand_to B</td>
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="positive">P</td>
+        <td><img src="within_s_o.svg"/></td>
+        <td>A within B</td>
+        <td>A opposite_strand_to B</td>
+
+
+    </tr>
+</table>
+
+</body>
+
+</html>
