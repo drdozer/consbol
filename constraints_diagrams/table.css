@@ -44,3 +44,7 @@ text-align: center; /* Center our text */
 hr{
     margin-top: 20px;
 }
+img{
+    padding: 7px;
+
+}
