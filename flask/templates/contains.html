@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>A <span class="constraint">contains</span>  B</h2>
+<table class="sig">
+    <!--<tr>-->
+        <!--<th colspan="6" class="header"> A contains B</th>-->
+
+    <!--</tr>-->
+    <tr>
+        <th colspan="6" class="example">Example: </th>
+    </tr>
+
+
+
+    <tr>
+        <th></th>
+        <th>A</th>
+        <th>B</th>
+        <th>Stranded Orientation</th>
+        <th>Index Constraint</th>
+        <th>Strand Constraint</th>
+
+    </tr>
+    <tr>
+        <td rowspan="2"><img src="{{ url_for('static', filename='images/constraints_diagrams/contains/contains_s_base.svg') }}"/></td>
+
+        <td class="positive">P</td>
+        <td class="positive">P</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/contains/contains_s_1.svg') }}"/></td>
+        <td>A contains B</td>
+        <td class="same">A same_strand_as B</td>
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="negative">N</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/contains/contains_s_2.svg') }}"/></td>
+        <td> A contains B</td>
+        <td class="same">A same_strand_as B</td>
+    </tr>
+    <tr>
+        <td rowspan="2"><img src="{{ url_for('static', filename='images/constraints_diagrams/contains/contains_o_base.svg') }}"/></td>
+
+        <td class="positive">P</td>
+        <td class="negative">N</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/contains/contains_o_2.svg') }}"/></td>
+        <td> A contains B</td>
+        <td>A opposite_strand_to B</td>
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="positive">P</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/contains/contains_o_1.svg') }}"/></td>
+        <td>A contains B</td>
+        <td>A opposite_strand_to B</td>
+
+
+    </tr>
+</table>
+<!--<hr/>-->
+<!--<h2>A <span class="constraint">contains</span> B</h2>-->
+<!--<table class="sig">-->
+    <!--&lt;!&ndash;<tr>&ndash;&gt;-->
+        <!--&lt;!&ndash;<th colspan="6" class="header">A contains B</th>&ndash;&gt;-->
+
+    <!--&lt;!&ndash;</tr>&ndash;&gt;-->
+    <!--<tr>-->
+        <!--<th colspan="6" class="example">Example:</th>-->
+    <!--</tr>-->
+
+    <!--<tr>-->
+        <!--<th>A</th>-->
+        <!--<th>B</th>-->
+        <!--<th>Stranded Orientation</th>-->
+        <!--<th>Index Constraint</th>-->
+        <!--<th>Strand Constraint</th>-->
+
+    <!--</tr>-->
+    <!--<tr>-->
+        <!--<td class="positive">P</td>-->
+        <!--<td class="positive">P</td>-->
+        <!--<td colspan="3"> N/A</td>-->
+
+    <!--</tr>-->
+    <!--<tr>-->
+        <!--<td class="negative">N</td>-->
+        <!--<td class="negative">N</td>-->
+        <!--<td colspan="3"> N/A</td>-->
+
+    <!--</tr>-->
+    <!--<tr>-->
+        <!--<td class="positive">P</td>-->
+        <!--<td class="negative">N</td>-->
+
+    <!--</tr>-->
+    <!--<tr>-->
+        <!--<td class="negative">N</td>-->
+        <!--<td class="positive">P</td>-->
+
+
+
+    <!--</tr>-->
+<!--</table>-->
+
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>A <span class="constraint">contains_suffix_5</span> B</h2>
+<table class="sig">
+    <!--<tr>-->
+        <!--<th colspan="6" class="header">A contains_suffix_5 B</th>-->
+
+    <!--</tr>-->
+    <tr>
+        <th colspan="6" class="example">Example: </th>
+    </tr>
+
+    <tr>
+        <td rowspan="6"><img src="{{ url_for('static', filename='images/constraints_diagrams/contains_suffix/contains_suffix_5_base.svg') }}"/></td>
+    </tr>
+
+    <tr>
+        <th>A</th>
+        <th>B</th>
+        <th>Stranded Orientation</th>
+        <th>Index Constraint</th>
+        <th>Strand Constraint</th>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="positive">P</td>
+        <td colspan="3"> N/A</td>
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="negative">N</td>
+        <td colspan="3"> N/A</td>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="negative">N</td>
+
+
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/contains_suffix/contains_suffix_5_1.svg') }}"/></td>
+        <td>A ends_with B</td>
+        <td>A opposite_strand_to B</td>
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="positive">P</td>
+
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/contains_suffix/contains_suffix_5_2.svg') }}"/></td>
+        <td> A starts_with B</td>
+        <td>A opposite_strand_to B</td>
+
+
+
+
+    </tr>
+</table>
+<hr/>
+<h2>A <span class="constraint">contains_suffix_3</span> B</h2>
+<table class="sig">
+    <!--<tr>-->
+        <!--<th colspan="6" class="header">A contains_suffix_3 B</th>-->
+
+    <!--</tr>-->
+    <tr>
+        <th colspan="6" class="example">Example:</th>
+    </tr>
+
+    <tr>
+        <td rowspan="6"><img src="{{ url_for('static', filename='images/constraints_diagrams/contains_suffix/contains_suffix_3_base.svg') }}"/></td>
+    </tr>
+    <tr>
+        <th>A</th>
+        <th>B</th>
+        <th>Stranded Orientation</th>
+        <th>Index Constraint</th>
+        <th>Strand Constraint</th>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="positive">P</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/contains_suffix/contains_suffix_3_1.svg') }}"/></td>
+        <td>A ends_with B</td>
+        <td class="same">A same_strand_as B</td>
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="negative">N</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/contains_suffix/contains_suffix_3_2.svg') }}"/></td>
+        <td> A starts_with B</td>
+        <td class="same">A same_strand_as B</td>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="negative">N</td>
+        <td colspan="3"> N/A</td>
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="positive">P</td>
+        <td colspan="3"> N/A</td>
+
+
+    </tr>
+</table>
+
+
+{% endblock %}

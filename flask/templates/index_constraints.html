@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Index Sequence Constraints</h1>
+<h2>
+    A <span class="constraint">equals</span> B
+</h2>
+<p>
+   <img class="alter1" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/equals.svg') }}" />
+
+</p>
+<hr/>
+<h2>
+    A <span class="constraint">contains</span> B
+</h2>
+<p>
+    <img class="alter2" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/contains.svg') }}" />
+</p>
+<hr/>
+<h2>
+    A <span class="constraint">within</span> B
+</h2>
+<p>
+    <img class="alter2" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/within.svg') }}" />
+
+</p>
+<hr/>
+<h2>
+    A <span class="constraint">ends_with</span> B
+</h2>
+<p>
+    <img  class="alter2" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/ends_with.svg') }}" />
+
+</p>
+<hr/>
+<h2>
+    A <span class="constraint">starts_with</span> B
+</h2>
+<p>
+<img  class="alter2"src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/starts_with.svg') }}" />
+
+</p>
+<hr/>
+<h2>
+    A <span class="constraint">touches</span> B
+</h2>
+<p>
+<img class="alter3" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/touches.svg') }}" />
+
+</p>
+<hr/>
+<h2>
+    A <span class="constraint">gap_then</span> B
+</h2>
+<p>
+<img class="alter" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/gap_then.svg') }}" />
+
+</p>
+<hr/>
+<h2>
+    A <span class="constraint">then</span> B
+</h2>
+<p>
+    The superset of 'gap_then' and 'touches'
+</p>
+<hr/>
+<h2>
+    A <span class="constraint">overlaps</span> B
+</h2>
+<p>
+<img  class="alter4" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/overlaps.svg') }}" />
+
+</p>
+
+{% endblock %}
