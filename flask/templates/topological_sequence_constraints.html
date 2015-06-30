@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Topological Sequence Constraints</h1>
+<p>
+    Topological Sequence Constraints build upon Index Sequence Constraints by allowing the constrained biopoymers to have strandedness. Contraints between the intervals of biopolymers can hold no matter what strand they are on.
+
+</p>
+<h2>Constraints</h2>
+<ul>
+    <li><a href="{{ url_for('contains') }}">contains</a></li>
+    <li><a href="{{ url_for('within') }}">within</a></li>
+    <li><a href="{{ url_for('equals') }}">equals</a></li>
+    <li><a href="{{ url_for('containsSuffix') }}">contains_suffix</a></li>
+    <li><a href="{{ url_for('containsPrefix') }}">contains_prefix</a></li>
+    <li><a href="{{ url_for('joinsDirectly') }}">joins_directly</a></li>
+    <li><a href="{{ url_for('joinsWithGap') }}">joins_with_gap</a></li>
+    <li><a href="{{ url_for('intersects') }}">intersects</a></li>
+</ul>
+{% endblock %}

@@ -9,19 +9,23 @@ img.logo {
 
 body {
     padding-top: 15px;
-    padding-bottom: 40px;
+    padding-bottom: 200px;
+    position: relative;
 }
 
-h1{
-    color: rgb(22,68,80);
+h1 {
+    color: rgb(22, 68, 80);
     font-size: 230%
 }
-h2{
+
+h2 {
     font-size: 180%
 }
-.constraint{
-    color: rgb(0,136,170);
+
+.constraint {
+    color: rgb(0, 136, 170);
 }
+
 .sidebar-nav {
     padding: 9px 0;
 }
@@ -71,25 +75,61 @@ td.same {
 
 img.alter2 {
     padding: 10px 86px;
-    border:solid;
+    border: solid;
     border-width: 1px;
+    display: block;
+
 }
+
 img.alter1 {
     padding: 10px 106px;
-    border:solid;
+    border: solid;
     border-width: 1px;
+    display: block;
+
 }
+
 img.alter3 {
     padding: 10px 34px;
-    border:solid;
+    border: solid;
     border-width: 1px;
+    display: block;
+
 }
+
 img.alter4 {
     padding: 10px 73px;
-    border:solid;
+    border: solid;
     border-width: 1px;
+    display: block;
+
 }
-img.alter{
-    border:solid;
+
+img.alter {
+    border: solid;
     border-width: 1px;
+    display: block;
+}
+
+#footer {
+
+    position: absolute;
+    border: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 200;
+    width: 100%;
+    padding-right: 20px;
+    padding-bottom: 10px;
+    text-align: right;
+}
+
+#footer img {
+    width: 10%;
+    height: 10%
+}
+
+.component {
+    color: rgb(55, 69, 72);
+    font-weight: bold;
 }

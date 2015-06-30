@@ -30,7 +30,6 @@
 <p>
     <img class="logo" src="{{ url_for('static', filename='images/logo.png') }}" with="80" height="80" alt="logo"/>
 </p>
-
 <div class="container">
     <br/>
     <nav role="navigation">
@@ -50,10 +49,11 @@
                         <li><a href="{{ url_for('lengthConstraints') }}">Length Constraints</a></li>
 
                         <li class="dropdown">
-                            <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                            <a href="{{ url_for('topologicalConstraints') }}" class="dropdown-toggle" data-toggle="dropdown" role="button"
                                aria-haspopup="true" aria-expanded="false">Topological Sequence Constraints <span
                                     class="caret"></span></a>
                             <ul class="dropdown-menu">
+                                <li><a href="{{ url_for('topologicalConstraints') }}"><strong>Topological Sequence Constraints</strong></a></li>
                                 <li><a href="{{ url_for('contains') }}">contains</a></li>
                                 <li><a href="{{ url_for('within') }}">within</a></li>
                                 <li><a href="{{ url_for('equals') }}">equals</a></li>
@@ -77,9 +77,11 @@
     {% block content %}
     {% endblock %}
 
-
 </div>
-
+   <div id="footer">
+        <a target="_blank" href="http://ico2s.org"><img id="icos" src="{{ url_for('static',filename='images/icos.png') }}" /></a>
+        <a target="_blank" href="http://ncl.ac.uk"><img id="ncl" src="{{ url_for('static',filename='images/newcastle-university.png') }}" /></a>
+    </div>
 </body>
 
 </html>

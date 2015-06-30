@@ -49,5 +49,9 @@ def indexConstraints():
 def lengthConstraints():
     return render_template('length_constraints.html')
 
+@app.route('/topological_sequence_constraints')
+def topologicalConstraints():
+    return render_template('topological_sequence_constraints.html')
+
 if __name__ == '__main__':
     app.run("0.0.0.0",debug=True, threaded=True)
