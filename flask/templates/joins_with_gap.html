@@ -1,0 +1,222 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>A <span class="constraint">joins_with_gap_3to5 </span> B</h2>
+<table class="sig">
+    <!--<tr>-->
+        <!--<th colspan="6" class="header">A joins_with_gap_3to5 B</th>-->
+
+    <!--</tr>-->
+    <tr>
+        <th colspan="6" class="example">Example:</th>
+    </tr>
+    <tr>
+        <td rowspan="6"><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_a_3_5_b_base.svg') }}"/></td>
+    </tr>
+
+    <tr>
+        <th>A</th>
+        <th>B</th>
+        <th>Stranded Orientation</th>
+        <th>Index Constraint</th>
+        <th>Strand Constraint</th>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="positive">P</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_a_3_5_b_1.svg') }}"/></td>
+        <td>A gap_then B</td>
+        <td class="same">A same_strand_as B</td>
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="negative">N</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_a_3_5_b_2.svg') }}"/></td>
+        <td> B gap_then A</td>
+        <td class="same">A same_strand_as B</td>
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="negative">N</td>
+        <td colspan="3"> N/A</td>
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="positive">P</td>
+        <td colspan="3"> N/A</td>
+
+
+    </tr>
+</table>
+<hr/>
+<h2>B <span class="constraint">joins_with_gap_3to5 </span> A</h2>
+<table class="sig">
+    <!--<tr>-->
+        <!--<th colspan="6" class="header">B joins_with_gap_3to5 A</th>-->
+
+    <!--</tr>-->
+    <tr>
+        <th colspan="6" class="example">Example:</th>
+    </tr>
+    <tr>
+        <td rowspan="6"><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_b_3_5_a_base.svg') }}"/></td>
+    </tr>
+
+    <tr>
+        <th>A</th>
+        <th>B</th>
+        <th>Stranded Orientation</th>
+        <th>Index Constraint</th>
+        <th>Strand Constraint</th>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="positive">P</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_b_3_5_a_1.svg') }}"/></td>
+        <td> B gap_then A</td>
+        <td class="same">B same_strand_as A</td>
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="negative">N</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_b_3_5_a_2.svg') }}"/></td>
+        <td>A gap_then B</td>
+        <td class="same">B same_strand_as A</td>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="negative">N</td>
+        <td colspan="3"> N/A</td>
+
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="positive">P</td>
+        <td colspan="3"> N/A</td>
+
+
+
+
+    </tr>
+</table>
+<hr/>
+<h2>A <span class="constraint">joins_with_gap_5to5 </span> B</h2>
+<table class="sig">
+    <!--<tr>-->
+        <!--<th colspan="6" class="header">A joins_with_gap_5to5 B</th>-->
+
+    <!--</tr>-->
+    <tr>
+        <th colspan="6" class="example">Example:</th>
+    </tr>
+    <tr>
+        <td rowspan="6"><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_a_5_5_b_base.svg') }}"/></td>
+    </tr>
+
+    <tr>
+        <th>A</th>
+        <th>B</th>
+        <th>Stranded Orientation</th>
+        <th>Index Constraint</th>
+        <th>Strand Constraint</th>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="positive">P</td>
+        <td colspan="3"> N/A</td>
+
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="negative">N</td>
+        <td colspan="3"> N/A</td>
+
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="negative">N</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_a_5_5_b_2.svg') }}"/></td>
+        <td>B gap_then A</td>
+        <td>A opposite_strand_to B</td>
+
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="positive">P</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_a_5_5_b_1.svg') }}"/></td>
+        <td> A gap_then B</td>
+        <td>A opposite_strand_to B</td>
+
+
+
+
+    </tr>
+</table>
+<hr/>
+<h2>A <span class="constraint">joins_with_gap_3to3 </span> B</h2>
+<table class="sig">
+    <!--<tr>-->
+        <!--<th colspan="6" class="header">A joins_with_gap_3to3 B</th>-->
+
+    <!--</tr>-->
+    <tr>
+        <th colspan="6" class="example">Example:</th>
+    </tr>
+    <tr>
+        <td rowspan="6"><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_a_3_3_b_base.svg') }}"/></td>
+    </tr>
+
+    <tr>
+        <th>A</th>
+        <th>B</th>
+        <th>Stranded Orientation</th>
+        <th>Index Constraint</th>
+        <th>Strand Constraint</th>
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="positive">P</td>
+        <td colspan="3"> N/A</td>
+
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="negative">N</td>
+        <td colspan="3"> N/A</td>
+
+
+    </tr>
+    <tr>
+        <td class="positive">P</td>
+        <td class="negative">N</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_a_3_3_b_1.svg') }}"/></td>
+        <td>A gap_then B</td>
+        <td>A opposite_strand_to B</td>
+
+
+    </tr>
+    <tr>
+        <td class="negative">N</td>
+        <td class="positive">P</td>
+        <td><img src="{{ url_for('static', filename='images/constraints_diagrams/joins_with_gap/gap_a_3_3_b_2.svg') }}"/></td>
+        <td>B gap_then A</td>
+        <td>A opposite_strand_to B</td>
+
+
+
+
+    </tr>
+</table>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Strand Constraints</h1>
+<p>
+    Strand Constraints describe the strandedness between two biopolymers.
+</p>
+<h2><span class="component">A</span> <span class="constraint">same_strand_as</span> <span class="component">B</span></h2>
+<p>
+This constrains that <span class="component">A</span> must be on the same strand as <span class="component">B</span>
+</p>
+<hr/>
+<h2><span class="component">A</span> <span class="constraint">opposite_strand_to</span><span class="component"> B</span></h2>
+<p>
+This constrains that <span class="component">A</span> must be on the opposite strand to <span class="component">B</span>
+
+</p>
+{% endblock %}
