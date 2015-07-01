@@ -16,9 +16,9 @@ object KnowTestSuite extends TestSuite {
 
       'lt - {
         'implicits - {
-          implicitly[Know[LT[String], OrdModel[String]]]
-          implicitly[Know[LT[String], Model[Symbol, String]]]
-          implicitly[Know[LT[Symbol], Model[Symbol, String]]]
+          implicitly[Know[LT, String, OrdModel[String]]]
+          implicitly[Know[LT, String, Model[Symbol, String]]]
+          implicitly[Know[LT, Symbol, Model[Symbol, String]]]
         }
 
         val m1 = m0 tell LT('a, 'b)
@@ -31,9 +31,9 @@ object KnowTestSuite extends TestSuite {
 
       'lt_eq - {
         'implicits - {
-          implicitly[Know[LT_EQ[String], OrdModel[String]]]
-          implicitly[Know[LT_EQ[String], Model[Symbol, String]]]
-          implicitly[Know[LT_EQ[Symbol], Model[Symbol, String]]]
+          implicitly[Know[LT_EQ, String, OrdModel[String]]]
+          implicitly[Know[LT_EQ, String, Model[Symbol, String]]]
+          implicitly[Know[LT_EQ, Symbol, Model[Symbol, String]]]
         }
 
         val m1 = m0 tell LT_EQ('a, 'b)
@@ -46,9 +46,9 @@ object KnowTestSuite extends TestSuite {
 
       'not_eq - {
         'implicits - {
-          implicitly[Know[NOT_EQ[String], OrdModel[String]]]
-          implicitly[Know[NOT_EQ[String], Model[Symbol, String]]]
-          implicitly[Know[NOT_EQ[Symbol], Model[Symbol, String]]]
+          implicitly[Know[NOT_EQ, String, OrdModel[String]]]
+          implicitly[Know[NOT_EQ, String, Model[Symbol, String]]]
+          implicitly[Know[NOT_EQ, Symbol, Model[Symbol, String]]]
         }
 
         val m1 = m0 tell NOT_EQ('a, 'b)
@@ -61,10 +61,10 @@ object KnowTestSuite extends TestSuite {
 
       'eq - {
         'implicits - {
-          implicitly[Know[EQ[String], InterpModel[Symbol, String]]]
+          implicitly[Know[EQ, String, InterpModel[Symbol, String]]]
           implicitly[Interpretation[EQ[Symbol], EQ[String], Model[Symbol, String]]]
-          implicitly[Know[EQ[String], Model[Symbol, String]]]
-          implicitly[Know[EQ[Symbol], Model[Symbol, String]]]
+          implicitly[Know[EQ, String, Model[Symbol, String]]]
+          implicitly[Know[EQ, Symbol, Model[Symbol, String]]]
         }
 
         val m1 = m0 tell EQ('a, 'b)

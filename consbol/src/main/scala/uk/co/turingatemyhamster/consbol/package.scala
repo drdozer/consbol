@@ -15,4 +15,11 @@ package object consbol {
       a,
       StreamT.empty)
   }
+
+  object TrueStream {
+
+
+    def apply[A](as: Iterable[A]): TrueStream[A] =
+      StreamT.fromStream(Need(as.to[Stream]))
+  }
 }

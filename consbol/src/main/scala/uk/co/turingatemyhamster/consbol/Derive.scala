@@ -1,6 +1,6 @@
 package uk.co.turingatemyhamster.consbol
 
-import Know._
+import Know.KnowOps
 import Tell._
 import Interpretations._
 
@@ -16,6 +16,9 @@ trait Derive[A, M] {
 
 
 object Derive extends DeriveLowPriorityImpicits {
+
+//  private def log[consbol](msg: String) = System.err.println(msg)
+  private[consbol] def log(msg: String) = {}
   
   implicit class DeriveOps[M](val _m: M) {
     def derive[A](a: A, goals: Set[Object])(implicit d: Derive[A, M]): TrueStream[(Proof[A], M)] =
@@ -25,36 +28,36 @@ object Derive extends DeriveLowPriorityImpicits {
       d(a, Set(), _m)
   }
 
-  @tailrec def lastModel[A, M](str: TrueStream[(A, M)], m0: M): M =
-    if(str.isEmpty.value) m0 else lastModel(str.tail, str.head.value._2)
+  def lastModel[A, M](str: TrueStream[(A, M)], m0: M): M =
+    (str.foldLeft(m0) { case (_, (_, m1)) => m1 }).value
 
   implicit def derive_lt[V, I]
-  (implicit is: Interpretations[I, Model[V, I]], k: Know[LT[I], Model[V, I]])
+  (implicit is: Interpretations[I, Model[V, I]], k: Know[LT, I, Model[V, I]])
   : Derive[LT[I], Model[V, I]] = new Derive[LT[I], Model[V, I]] {
     override def apply(a: LT[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT[I]], Model[V, I])] = {
-      System.err.println(s"${" " * goals.size}lt $a $goals")
+      log(s"${" " * goals.size}lt $a $goals")
 
       if(goals contains a) {
-        System.err.println(s"${" " * goals.size}lt $a - cut")
+        log(s"${" " * goals.size}lt $a - cut")
         StreamT.empty
       } else {
         val g = goals + a
 
         val k1 = m0 know a map (_ -> m0)
-        System.err.println(s"${" " * goals.size}lt $a - know $k1")
+        log(s"${" " * goals.size}lt $a - know $k1")
 
         k1 mappend {
           val m1 = lastModel(k1, m0)
           val k2 = `lt_<_<` apply (a, g, m1)
 
           k2 mappend {
-            System.err.println(s"${" " * goals.size}lt $a - < <=")
+            log(s"${" " * goals.size}lt $a - < <=")
 
             val m2 = lastModel(k2, m1)
             val k3 = `lt_<_<=` apply (a, g, m2)
 
             k3 mappend {
-              System.err.println(s"${" " * goals.size}lt $a - <= <")
+              log(s"${" " * goals.size}lt $a - <= <")
 
               val m3 = lastModel(k3, m2)
               `lt_<=_<` apply (a, g, m3)
@@ -69,16 +72,16 @@ object Derive extends DeriveLowPriorityImpicits {
   (implicit is: Interpretations[I, Model[V, I]])
   : Derive[LT[I], Model[V, I]] = new Derive[LT[I], Model[V, I]] {
     override def apply(a: LT[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT[I]], Model[V, I])] = {
-      System.err.println(s"${" " * goals.size}lt_<_<= $a $goals")
+      log(s"${" " * goals.size}lt_<_<= $a $goals")
 
       for {
-        x <- m0.allInterpretations
-        _ = System.err.println(s"${" " * goals.size}lt_<_<= $a - trying $x")
-        (p1, m1) <- m0 derive(LT(a.lhs, x), goals)
-        (p2, m2) <- m1 derive(LT_EQ(x, a.rhs), goals)
+        px <- m0.knowLHS[LT, I](a.lhs)
+        x = px.result.rhs
+        _ = log(s"${" " * goals.size}lt_<_<= $a - trying $x")
+        (p1, m1) <- m0 derive(LT_EQ(x, a.rhs), goals)
       } yield {
-        System.err.println(s"${" " * goals.size}lt_<_<= $a - solution $p1 $p2")
-        Rule2("lt_<_<=", a, p1, p2) -> (m2 tell a)
+        log(s"${" " * goals.size}lt_<_<= $a - solution $x $p1")
+        Rule2("lt_<_<=", a, px, p1) -> (m1 tell a)
       }
     }
   }
@@ -87,16 +90,16 @@ object Derive extends DeriveLowPriorityImpicits {
   (implicit is: Interpretations[I, Model[V, I]])
   : Derive[LT[I], Model[V, I]] = new Derive[LT[I], Model[V, I]] {
     override def apply(a: LT[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT[I]], Model[V, I])] = {
-      System.err.println(s"${" " * goals.size}lt_<=_< $a $goals")
+      log(s"${" " * goals.size}lt_<=_< $a $goals")
 
       for {
-        x <- m0.allInterpretations
-        _ = System.err.println(s"${" " * goals.size}lt_<=_< $a - trying $x")
-        (p1, m1) <- m0 derive(LT_EQ(a.lhs, x), goals)
-        (p2, m2) <- m1 derive(LT(x, a.rhs), goals)
+        px <- m0.knowLHS[LT_EQ, I](a.lhs)
+        x = px.result.rhs
+        _ = log(s"${" " * goals.size}lt_<=_< $a - trying $x")
+        (p1, m1) <- m0 derive(LT(x, a.rhs), goals)
       } yield {
-        System.err.println(s"${" " * goals.size}lt_<=_< $a - solution $p1 $p2")
-        Rule2("lt_<=_<", a, p1, p2) -> (m2 tell a)
+        log(s"${" " * goals.size}lt_<=_< $a - solution $px $p1")
+        Rule2("lt_<=_<", a, px, p1) -> (m1 tell a)
       }
     }
   }
@@ -105,40 +108,40 @@ object Derive extends DeriveLowPriorityImpicits {
   (implicit is: Interpretations[I, Model[V, I]])
   : Derive[LT[I], Model[V, I]] = new Derive[LT[I], Model[V, I]] {
     override def apply(a: LT[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT[I]], Model[V, I])] = {
-      System.err.println(s"${" " * goals.size}lt_<_< $a $goals")
+      log(s"${" " * goals.size}lt_<_< $a $goals")
       for {
-        x <- m0.allInterpretations
-        _ = System.err.println(s"${" " * goals.size}lt_<_< $a - trying $x")
-        (p1, m1) <- m0 derive(LT(a.lhs, x), goals)
-        (p2, m2) <- m1 derive(LT(x, a.rhs), goals)
+        px <- m0.knowLHS[LT, I](a.lhs)
+        x = px.result.rhs
+        _ = log(s"${" " * goals.size}lt_<_< $a - trying $x")
+        (p1, m1) <- m0 derive(LT(x, a.rhs), goals)
       } yield {
-        System.err.println(s"${" " * goals.size}lt_<_< $a - solution $p1 $p2")
-        Rule2("lt_<_<", a, p1, p2) -> (m2 tell a)
+        log(s"${" " * goals.size}lt_<_< $a - solution $px $p1")
+        Rule2("lt_<_<", a, px, p1) -> (m1 tell a)
       }
     }
   }
 
   implicit def derive_lt_eq[V, I]
-  (implicit is: Interpretations[I, Model[V, I]], kLtEq: Know[LT_EQ[I], Model[V, I]])
+  (implicit is: Interpretations[I, Model[V, I]], kLtEq: Know[LT_EQ, I, Model[V, I]])
   : Derive[LT_EQ[I], Model[V, I]] = new Derive[LT_EQ[I], Model[V, I]] {
     override def apply(a: LT_EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT_EQ[I]], Model[V, I])] = {
-      System.err.println(s"${" " * goals.size}lt_eq $a $goals")
+      log(s"${" " * goals.size}lt_eq $a $goals")
 
       if (goals contains a) {
-        System.err.println(s"${" " * goals.size}lt_eq $a - cut")
+        log(s"${" " * goals.size}lt_eq $a - cut")
         StreamT.empty
       } else {
         val g = goals + a
         val k1 = m0 know a map (_ -> m0)
-        System.err.println(s"${" " * goals.size}lt_eq $a - know $k1")
+        log(s"${" " * goals.size}lt_eq $a - know $k1")
 
         k1 mappend {
-          System.err.println(s"${" " * goals.size}lt_eq $a - <")
+          log(s"${" " * goals.size}lt_eq $a - <")
           val m1 = lastModel(k1, m0)
           val k2 = `lt_eq_<` apply(a, g, m1)
 
           k2 mappend {
-            System.err.println(s"${" " * goals.size}lt_eq $a - <= =>")
+            log(s"${" " * goals.size}lt_eq $a - <= =>")
             val m2 = lastModel(k2, m1)
             `lt_eq_<=_>=` apply(a, g, m2)
           }
@@ -153,10 +156,10 @@ object Derive extends DeriveLowPriorityImpicits {
   : Derive[LT_EQ[I], Model[V, I]] = new Derive[LT_EQ[I], Model[V, I]] {
     override def apply(a: LT_EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT_EQ[I]], Model[V, I])] =
       for {
-        x <- m0.allInterpretations
-        (p1, m1) <- m0 derive (LT_EQ(a.lhs, x), goals)
-        (p2, m2) <- m1 derive (LT_EQ(x, a.rhs), goals)
-      } yield Rule2("lt_eq_<=_<=", a, p1, p2) -> (m2 tell a)
+        px <- m0.knowLHS[LT_EQ, I](a.lhs)
+        x = px.result.rhs
+        (p1, m1) <- m0 derive (LT_EQ(x, a.rhs), goals)
+      } yield Rule2("lt_eq_<=_<=", a, px, p1) -> (m1 tell a)
   }
 
   def `lt_eq_<`[V, I]
@@ -181,7 +184,7 @@ object Derive extends DeriveLowPriorityImpicits {
   }
 
   implicit def derive_not_eq[V, I]
-  (implicit is: Interpretations[I, Model[V, I]], k: Know[NOT_EQ[I], Model[V, I]])
+  (implicit is: Interpretations[I, Model[V, I]], k: Know[NOT_EQ, I, Model[V, I]])
   : Derive[NOT_EQ[I], Model[V, I]] = new Derive[NOT_EQ[I], Model[V, I]] {
     override def apply(a: NOT_EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[NOT_EQ[I]], Model[V, I])] =
       if(goals contains a) {
@@ -219,7 +222,7 @@ trait DeriveLowPriorityImpicits {
 
     override def apply(a: A[V], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[A[V]], Model[V, I])] = {
       val (a1, m1) = m0 interpretation a
-      System.err.println(s"Deriving $a")
+      Derive.log(s"Deriving $a")
       m1 derive (a1, goals) map { case (p, m) => Interpreted(a, p) -> m }
     }
 
