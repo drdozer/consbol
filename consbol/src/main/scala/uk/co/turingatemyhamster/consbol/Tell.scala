@@ -4,9 +4,11 @@ import Interpretation._
 
 import scala.language.higherKinds
 
-/**
- * Created by nmrp3 on 26/06/15.
- */
+
+trait Tell[A, M] {
+  def apply(a: A, m: M): M
+}
+
 object Tell extends TellLowPriorityImplicits {
 
   implicit class TellOps[M](val m: M) {
@@ -54,8 +56,4 @@ trait TellLowPriorityImplicits {
     }
   }
 
-}
-
-trait Tell[A, M] {
-  def apply(a: A, m: M): M
 }

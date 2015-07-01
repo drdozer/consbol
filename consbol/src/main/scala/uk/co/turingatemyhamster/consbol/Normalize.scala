@@ -1,5 +1,7 @@
 package uk.co.turingatemyhamster.consbol
 
+import scala.language.higherKinds
+
 
 trait Normalize[A[_], B[_]] {
   def apply[V](a: A[V]): B[V]

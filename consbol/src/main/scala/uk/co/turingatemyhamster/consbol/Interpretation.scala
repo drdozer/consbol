@@ -1,5 +1,7 @@
 package uk.co.turingatemyhamster.consbol
 
+import scalaz.{Need, StreamT}
+
 
 trait Interpretation[TV, TI, M] {
   def apply(a: TV, m: M): (TI, M)
@@ -51,25 +53,25 @@ object Interpretation {
 
 
 trait Interpretations[I, M] {
-  def apply(m: M): Iterable[I]
+  def apply(m: M): TrueStream[I]
 }
 
 object Interpretations {
 
   implicit class InterpretationsOps[M](val _m: M) {
-    def allInterpretations[I](implicit in: Interpretations[I, M]): Iterable[I] =
+    def allInterpretations[I](implicit in: Interpretations[I, M]): TrueStream[I] =
       in.apply(_m)
   }
 
   implicit def interpretations_interpModel[V, I]
   : Interpretations[I, InterpModel[V, I]] = new Interpretations[I, InterpModel[V, I]] {
-    override def apply(m: InterpModel[V, I]): Iterable[I] =
-      m.eq.keys
+    override def apply(m: InterpModel[V, I]): TrueStream[I] =
+      StreamT.fromStream(Need(m.eq.keys.to[Stream]))
   }
 
   implicit def interpretations_model[V, I]
   : Interpretations[I, Model[V, I]] = new Interpretations[I, Model[V, I]] {
-    override def apply(m: Model[V, I]): Iterable[I] =
+    override def apply(m: Model[V, I]): TrueStream[I] =
       m.i.allInterpretations
   }
 

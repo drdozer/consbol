@@ -24,9 +24,9 @@ object KnowTestSuite extends TestSuite {
         val m1 = m0 tell LT('a, 'b)
         val k = m1 know LT('a, 'b)
 
-        'got_result - assert(k.nonEmpty)
-        'got_right_result - assert(k.head.result == LT('a, 'b))
-        'got_only_one_result - assert(k.tail.isEmpty)
+        'got_result - assert(!k.isEmpty.value)
+        'got_right_result - assert(k.head.value.result == LT('a, 'b))
+        'got_only_one_result - assert(k.tail.isEmpty.value)
       }
 
       'lt_eq - {
@@ -39,9 +39,9 @@ object KnowTestSuite extends TestSuite {
         val m1 = m0 tell LT_EQ('a, 'b)
         val k = m1 know LT_EQ('a, 'b)
 
-        'got_result - assert(k.nonEmpty)
-        'got_right_result - assert(k.head.result == LT_EQ('a, 'b))
-        'got_only_one_result - assert(k.tail.isEmpty)
+        'got_result - assert(!k.isEmpty.value)
+        'got_right_result - assert(k.head.value.result == LT_EQ('a, 'b))
+        'got_only_one_result - assert(k.tail.isEmpty.value)
       }
 
       'not_eq - {
@@ -54,9 +54,9 @@ object KnowTestSuite extends TestSuite {
         val m1 = m0 tell NOT_EQ('a, 'b)
         val k = m1 know NOT_EQ('a, 'b)
 
-        'got_result - assert(k.nonEmpty)
-        'got_right_result - assert(k.head.result == NOT_EQ('a, 'b))
-        'got_only_one_result - assert(k.tail.isEmpty)
+        'got_result - assert(!k.isEmpty.value)
+        'got_right_result - assert(k.head.value.result == NOT_EQ('a, 'b))
+        'got_only_one_result - assert(k.tail.isEmpty.value)
       }
 
       'eq - {
@@ -70,9 +70,9 @@ object KnowTestSuite extends TestSuite {
         val m1 = m0 tell EQ('a, 'b)
         val k = m1 know EQ('a, 'b)
 
-        'got_result - assert(k.nonEmpty)
-        'got_right_result - assert(k.head.result == EQ('a, 'b))
-        'got_only_one_result - assert(k.tail.isEmpty)
+        'got_result - assert(!k.isEmpty.value)
+        'got_right_result - assert(k.head.value.result == EQ('a, 'b))
+        'got_only_one_result - assert(k.tail.isEmpty.value)
       }
     }
   }

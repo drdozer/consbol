@@ -1,8 +1,10 @@
 package uk.co.turingatemyhamster.consbol
 
-/**
- * Created by nmrp3 on 27/06/15.
- */
+
+trait Unifier[I, M] {
+  def apply(aI: I, bI: I, uI: I, m: M): M
+}
+
 object Unifier {
 
   implicit class UnifierOps[M](m: M) {
@@ -57,8 +59,4 @@ object Unifier {
         at = m.at - aI - bI + (uI -> suI))
     }
   }
-}
-
-trait Unifier[I, M] {
-  def apply(aI: I, bI: I, uI: I, m: M): M
 }
