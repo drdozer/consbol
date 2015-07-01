@@ -17,8 +17,8 @@ object DeriveTestSuite extends TestSuite {
       'lt - {
 
         'implicits - {
-          implicitly[Interpretations[String, InterpModel[Symbol, String]]]
-          implicitly[Interpretations[String, Model[Symbol, String]]]
+          implicitly[Interpretation[Symbol, String, InterpModel[Symbol, String]]]
+          implicitly[Interpretation[LT[Symbol], LT[String], Model[Symbol, String]]]
           implicitly[Derive[LT[String], Model[Symbol, String]]]
           implicitly[Derive[LT[Symbol], Model[Symbol, String]]]
         }

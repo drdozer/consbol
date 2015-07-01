@@ -50,7 +50,7 @@ object Interpretation {
 
   // fixme: should this be against InterpModel rather than Model?
   implicit def opInterpolation[A[_], V, I]
-  (implicit vOp: BinOp[A[V], V], iOp: BinOp[A[I], I], viI: Interpretation[V, I, Model[V, I]])
+  (implicit vOp: BinOp[A, V], iOp: BinOp[A, I], viI: Interpretation[V, I, Model[V, I]])
   : Interpretation[A[V], A[I], Model[V, I]] = new Interpretation[A[V], A[I], Model[V, I]]
   {
     override def apply(a: A[V], m0: Model[V, I]): (A[I], Model[V, I]) = {
@@ -84,30 +84,30 @@ object Interpretation {
 }
 
 
-trait Interpretations[I, M] {
-  def apply(m: M): TrueStream[I]
-}
-
-object Interpretations {
-
-  implicit class InterpretationsOps[M](val _m: M) {
-    def allInterpretations[I](implicit in: Interpretations[I, M]): TrueStream[I] =
-      in.apply(_m)
-  }
-
-  implicit def interpretations_interpModel[V, I]
-  : Interpretations[I, InterpModel[V, I]] = new Interpretations[I, InterpModel[V, I]] {
-    override def apply(m: InterpModel[V, I]): TrueStream[I] =
-      StreamT.fromStream(Need(m.eq.keys.to[Stream]))
-  }
-
-  implicit def interpretations_model[V, I]
-  : Interpretations[I, Model[V, I]] = new Interpretations[I, Model[V, I]] {
-    override def apply(m: Model[V, I]): TrueStream[I] =
-      m.i.allInterpretations
-  }
-
-}
+//trait Interpretations[I, M] {
+//  def apply(m: M): TrueStream[I]
+//}
+//
+//object Interpretations {
+//
+//  implicit class InterpretationsOps[M](val _m: M) {
+//    def allInterpretations[I](implicit in: Interpretations[I, M]): TrueStream[I] =
+//      in.apply(_m)
+//  }
+//
+//  implicit def interpretations_interpModel[V, I]
+//  : Interpretations[I, InterpModel[V, I]] = new Interpretations[I, InterpModel[V, I]] {
+//    override def apply(m: InterpModel[V, I]): TrueStream[I] =
+//      StreamT.fromStream(Need(m.eq.keys.to[Stream]))
+//  }
+//
+//  implicit def interpretations_model[V, I]
+//  : Interpretations[I, Model[V, I]] = new Interpretations[I, Model[V, I]] {
+//    override def apply(m: Model[V, I]): TrueStream[I] =
+//      m.i.allInterpretations
+//  }
+//
+//}
 
 
 trait InterpretationSingleton[V, I] {

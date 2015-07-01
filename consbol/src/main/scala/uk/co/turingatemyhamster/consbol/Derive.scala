@@ -2,7 +2,6 @@ package uk.co.turingatemyhamster.consbol
 
 import Know.KnowOps
 import Tell._
-import Interpretations._
 
 import scala.annotation.tailrec
 import scala.language.higherKinds
