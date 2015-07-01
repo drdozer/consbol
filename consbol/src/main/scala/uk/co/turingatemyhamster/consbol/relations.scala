@@ -13,6 +13,8 @@ case class NOT_EQ[T](lhs: T, rhs: T)
 case class NOT_GT_EQ[T](lhs: T, rhs: T)
 case class NOT_GT[T](lhs: T, rhs: T)
 
+case class AT[T](point: T, loc: Int)
+
 trait BinOp[O, T] {
   def decompose(o: O): (T, T)
   def recompose(tt: (T, T)): O

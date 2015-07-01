@@ -2,7 +2,7 @@ package uk.co.turingatemyhamster.consbol
 
 import utest._
 
-object AssertTestSuite extends TestSuite {
+object TellTestSuite extends TestSuite {
 
   val tests = TestSuite {
 
@@ -78,6 +78,27 @@ object AssertTestSuite extends TestSuite {
         val bI = m1.i.v2i('b)
 
         'identical_interpretations - assert(aI == bI)
+      }
+
+      'at - {
+        'implicits - {
+          implicitly[Tell[AT[String], IndexModel[String]]]
+          implicitly[Tell[AT[String], Model[Symbol, String]]]
+          implicitly[Interpretation[AT[Symbol], AT[String], Model[Symbol, String]]]
+          implicitly[Tell[AT[Symbol], Model[Symbol, String]]]
+        }
+
+        val m1 = m0 tell AT('a, 10) tell AT('b, 21) tell AT('b, 13)
+
+        'contains_a - assert(m1.i.v2i.contains('a))
+        'contains_b - assert(m1.i.v2i.contains('b))
+
+        val aI = m1.i.v2i('a)
+        val bI = m1.i.v2i('b)
+
+        assert(m1.index.at(aI) contains 10)
+        assert(m1.index.at(bI) contains 21)
+        assert(m1.index.at(bI) contains 13)
       }
     }
 

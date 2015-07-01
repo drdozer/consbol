@@ -38,6 +38,7 @@ object Interpretation {
     }
   }
 
+  // fixme: should this be against InterpModel rather than Model?
   implicit def opInterpolation[A[_], V, I]
   (implicit vOp: BinOp[A[V], V], iOp: BinOp[A[I], I], viI: Interpretation[V, I, Model[V, I]])
   : Interpretation[A[V], A[I], Model[V, I]] = new Interpretation[A[V], A[I], Model[V, I]]
@@ -47,6 +48,16 @@ object Interpretation {
       val (lhsI, m1) = m0 interpretation lhsV
       val (rhsI, m2) = m1 interpretation rhsV
       iOp.recompose(lhsI, rhsI) -> m2
+    }
+  }
+
+  // fixme: should this be against InterpModel rather than Model?
+  implicit def atInterpretation[V, I]
+  (implicit viI: Interpretation[V, I, Model[V, I]])
+  : Interpretation[AT[V], AT[I], Model[V, I]] = new Interpretation[AT[V], AT[I], Model[V, I]] {
+    override def apply(a: AT[V], m0: Model[V, I]): (AT[I], Model[V, I]) = {
+      val (pointI, m1) = m0 interpretation a.point
+      AT(pointI, a.loc) -> m1
     }
   }
 }
