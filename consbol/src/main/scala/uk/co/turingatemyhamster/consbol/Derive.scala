@@ -32,7 +32,7 @@ object Derive extends DeriveLowPriorityImpicits {
     (str.foldLeft(m0) { case (_, (_, m1)) => m1 }).value
 
   implicit def derive_lt[V, I]
-  (implicit is: Interpretations[I, Model[V, I]], k: Know[LT, I, Model[V, I]])
+  (implicit k: Know[LT, I, Model[V, I]])
   : Derive[LT[I], Model[V, I]] = new Derive[LT[I], Model[V, I]] {
     override def apply(a: LT[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT[I]], Model[V, I])] = {
       log(s"${" " * goals.size}lt $a $goals")
@@ -48,19 +48,24 @@ object Derive extends DeriveLowPriorityImpicits {
 
         k1 mappend {
           val m1 = lastModel(k1, m0)
-          val k2 = `lt_<_<` apply (a, g, m1)
+          val k2 = `lt_at` apply (a, g, m1)
 
           k2 mappend {
-            log(s"${" " * goals.size}lt $a - < <=")
-
             val m2 = lastModel(k2, m1)
-            val k3 = `lt_<_<=` apply (a, g, m2)
+            val k3 = `lt_<_<` apply (a, g, m2)
 
             k3 mappend {
-              log(s"${" " * goals.size}lt $a - <= <")
+              log(s"${" " * goals.size}lt $a - < <=")
 
               val m3 = lastModel(k3, m2)
-              `lt_<=_<` apply (a, g, m3)
+              val k4 = `lt_<_<=` apply (a, g, m3)
+
+              k4 mappend {
+                log(s"${" " * goals.size}lt $a - <= <")
+
+                val m4 = lastModel(k4, m3)
+                `lt_<=_<` apply (a, g, m4)
+              }
             }
           }
         }
@@ -69,7 +74,6 @@ object Derive extends DeriveLowPriorityImpicits {
   }
 
   def `lt_<_<=`[V, I]
-  (implicit is: Interpretations[I, Model[V, I]])
   : Derive[LT[I], Model[V, I]] = new Derive[LT[I], Model[V, I]] {
     override def apply(a: LT[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT[I]], Model[V, I])] = {
       log(s"${" " * goals.size}lt_<_<= $a $goals")
@@ -87,7 +91,6 @@ object Derive extends DeriveLowPriorityImpicits {
   }
 
   def `lt_<=_<`[V, I]
-  (implicit is: Interpretations[I, Model[V, I]])
   : Derive[LT[I], Model[V, I]] = new Derive[LT[I], Model[V, I]] {
     override def apply(a: LT[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT[I]], Model[V, I])] = {
       log(s"${" " * goals.size}lt_<=_< $a $goals")
@@ -105,7 +108,6 @@ object Derive extends DeriveLowPriorityImpicits {
   }
 
   def `lt_<_<`[V, I]
-  (implicit is: Interpretations[I, Model[V, I]])
   : Derive[LT[I], Model[V, I]] = new Derive[LT[I], Model[V, I]] {
     override def apply(a: LT[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT[I]], Model[V, I])] = {
       log(s"${" " * goals.size}lt_<_< $a $goals")
@@ -122,7 +124,7 @@ object Derive extends DeriveLowPriorityImpicits {
   }
 
   implicit def derive_lt_eq[V, I]
-  (implicit is: Interpretations[I, Model[V, I]], kLtEq: Know[LT_EQ, I, Model[V, I]])
+  (implicit kLtEq: Know[LT_EQ, I, Model[V, I]])
   : Derive[LT_EQ[I], Model[V, I]] = new Derive[LT_EQ[I], Model[V, I]] {
     override def apply(a: LT_EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT_EQ[I]], Model[V, I])] = {
       log(s"${" " * goals.size}lt_eq $a $goals")
@@ -136,14 +138,19 @@ object Derive extends DeriveLowPriorityImpicits {
         log(s"${" " * goals.size}lt_eq $a - know $k1")
 
         k1 mappend {
-          log(s"${" " * goals.size}lt_eq $a - <")
           val m1 = lastModel(k1, m0)
-          val k2 = `lt_eq_<` apply(a, g, m1)
+          val k2 = lt_eq_at apply (a, g, m1)
 
           k2 mappend {
-            log(s"${" " * goals.size}lt_eq $a - <= =>")
+            log(s"${" " * goals.size}lt_eq $a - <")
             val m2 = lastModel(k2, m1)
-            `lt_eq_<=_>=` apply(a, g, m2)
+            val k3 = `lt_eq_<` apply(a, g, m2)
+
+            k3 mappend {
+              log(s"${" " * goals.size}lt_eq $a - <= =>")
+              val m3 = lastModel(k3, m2)
+              `lt_eq_<=_>=` apply(a, g, m3)
+            }
           }
         }
 
@@ -152,7 +159,6 @@ object Derive extends DeriveLowPriorityImpicits {
   }
 
   def `lt_eq_<=_>=`[V, I]
-  (implicit is: Interpretations[I, Model[V, I]])
   : Derive[LT_EQ[I], Model[V, I]] = new Derive[LT_EQ[I], Model[V, I]] {
     override def apply(a: LT_EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT_EQ[I]], Model[V, I])] =
       for {
@@ -163,7 +169,6 @@ object Derive extends DeriveLowPriorityImpicits {
   }
 
   def `lt_eq_<`[V, I]
-  (implicit is: Interpretations[I, Model[V, I]])
   : Derive[LT_EQ[I], Model[V, I]] = new Derive[LT_EQ[I], Model[V, I]] {
     override def apply(a: LT_EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT_EQ[I]], Model[V, I])] =
       for {
@@ -172,7 +177,7 @@ object Derive extends DeriveLowPriorityImpicits {
   }
 
   implicit def derive_eq[V, I]
-  (implicit is: Interpretations[I, Model[V, I]], t: Tell[EQ[I], Model[V, I]]) // fixme: not sure why t is needed here but nowhere else
+  (implicit t: Tell[EQ[I], Model[V, I]]) // fixme: not sure why t is needed here but nowhere else
   : Derive[EQ[I], Model[V, I]] = new Derive[EQ[I], Model[V, I]] {
     override def apply(a: EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[EQ[I]], Model[V, I])] =
       if(goals contains a) {
@@ -184,7 +189,7 @@ object Derive extends DeriveLowPriorityImpicits {
   }
 
   implicit def derive_not_eq[V, I]
-  (implicit is: Interpretations[I, Model[V, I]], k: Know[NOT_EQ, I, Model[V, I]])
+  (implicit k: Know[NOT_EQ, I, Model[V, I]])
   : Derive[NOT_EQ[I], Model[V, I]] = new Derive[NOT_EQ[I], Model[V, I]] {
     override def apply(a: NOT_EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[NOT_EQ[I]], Model[V, I])] =
       if(goals contains a) {
@@ -194,13 +199,18 @@ object Derive extends DeriveLowPriorityImpicits {
         val k1 = m0 know a map (_ -> m0)
 
         k1 mappend {
-          `noteq_<_>` apply (a, g, m0)
+          val m1 = lastModel(k1, m0)
+          val k2 = `not_eq_at` apply(a, g, m0)
+
+          k2 mappend {
+            val m2 = lastModel(k2, m1)
+            `noteq_<_>` apply (a, g, m2)
+          }
         }
       }
   }
 
   def `noteq_<_>`[V, I]
-  (implicit is: Interpretations[I, Model[V, I]])
   : Derive[NOT_EQ[I], Model[V, I]] = new Derive[NOT_EQ[I], Model[V, I]] {
     override def apply(a: NOT_EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[NOT_EQ[I]], Model[V, I])] =
       for {
@@ -209,6 +219,57 @@ object Derive extends DeriveLowPriorityImpicits {
       } yield Rule2("not_eq_<_>", a, p1, p2) -> (m2 tell a)
   }
 
+  implicit def derive_at[V, I]: Derive[AT[I], Model[V, I]] = new Derive[AT[I], Model[V, I]] {
+    override def apply(a: AT[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[AT[I]], Model[V, I])] =
+      m0 know a map (_ -> m0)
+  }
+
+  def `lt_at`[V, I]
+  : Derive[LT[I], Model[V, I]] = new Derive[LT[I], Model[V, I]] {
+    override def apply(a: LT[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT[I]], Model[V, I])] =
+      for {
+        atLHS <- m0.knowLHS[AT, I](a.lhs)
+        atRHS <- m0.knowLHS[AT, I](a.rhs)
+        if(atLHS.result.loc < atRHS.result.loc)
+      } yield
+      Rule2("lt_at", a, atLHS, atRHS) -> (m0 tell a)
+  }
+
+  def `lt_eq_at`[V, I]
+  : Derive[LT_EQ[I], Model[V, I]] = new Derive[LT_EQ[I], Model[V, I]] {
+    override def apply(a: LT_EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[LT_EQ[I]], Model[V, I])] =
+      for {
+        atLHS <- m0.knowLHS[AT, I](a.lhs)
+        atRHS <- m0.knowLHS[AT, I](a.rhs)
+        if(atLHS.result.loc <= atRHS.result.loc)
+      } yield
+      Rule2("lt_eq_at", a, atLHS, atRHS) -> (m0 tell a)
+  }
+
+  def `eq_at`[V, I]
+  (implicit
+   vi: InterpretationSingleton[V, I], unify: UnifyI[I],
+   in: Interpretation[EQ[V], EQ[I], Model[V, I]])
+  : Derive[EQ[I], Model[V, I]] = new Derive[EQ[I], Model[V, I]] {
+    override def apply(a: EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[EQ[I]], Model[V, I])] =
+      for {
+        atLHS <- m0.knowLHS[AT, I](a.lhs)
+        atRHS <- m0.knowLHS[AT, I](a.rhs)
+        if(atLHS.result.loc == atRHS.result.loc)
+      } yield
+      Rule2("lt_eq_at", a, atLHS, atRHS) -> (m0 tell a)
+  }
+
+  def `not_eq_at`[V, I]
+  : Derive[NOT_EQ[I], Model[V, I]] = new Derive[NOT_EQ[I], Model[V, I]] {
+    override def apply(a: NOT_EQ[I], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[NOT_EQ[I]], Model[V, I])] =
+      for {
+        atLHS <- m0.knowLHS[AT, I](a.lhs)
+        atRHS <- m0.knowLHS[AT, I](a.rhs)
+        if(atLHS.result.loc != atRHS.result.loc)
+      } yield
+      Rule2("lt_eq_at", a, atLHS, atRHS) -> (m0 tell a)
+  }
 }
 
 trait DeriveLowPriorityImpicits {
@@ -217,7 +278,9 @@ trait DeriveLowPriorityImpicits {
   import Interpretation.InterpretationOps
 
   implicit def derive_usingInterpretation[A[_], V, I]
-  (implicit in: Interpretation[A[V], A[I], Model[V, I]], d: Derive[A[I], Model[V, I]])
+  (implicit
+   in: Interpretation[A[V], A[I], Model[V, I]],
+   d: Derive[A[I], Model[V, I]])
   : Derive[A[V], Model[V, I]] = new Derive[A[V], Model[V, I]] {
 
     override def apply(a: A[V], goals: Set[Object], m0: Model[V, I]): TrueStream[(Proof[A[V]], Model[V, I])] = {

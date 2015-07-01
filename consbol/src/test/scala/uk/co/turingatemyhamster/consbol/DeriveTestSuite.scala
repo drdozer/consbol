@@ -13,7 +13,7 @@ object DeriveTestSuite extends TestSuite {
 
     val m0 = Model.empty[Symbol, String]
 
-    'derive - {
+    'derive_relative - {
       'lt - {
 
         'implicits - {
@@ -177,6 +177,101 @@ object DeriveTestSuite extends TestSuite {
 
           'ac_known_after - assert(!k_after.isEmpty.value)
         }
+      }
+    }
+
+    'derive_at - {
+      'lt - {
+
+        'implicits - {
+          implicitly[Derive[AT[String], Model[Symbol, String]]]
+          implicitly[Derive[AT[Symbol], Model[Symbol, String]]]
+        }
+
+        'derive_told {
+          val m1 = m0 tell AT('a, 10) tell AT('b, 20)
+
+          val d_a = m1 derive AT('a, 10)
+          val d_b = m1 derive AT('b, 20)
+
+          'got_result_a - assert(!d_a.isEmpty.value)
+          'result_is_correct_a - assert(d_a.head.value._1.result == AT('a, 10))
+          'one_result_b - assert(d_a.tail.isEmpty.value)
+
+          'got_result_b - assert(!d_b.isEmpty.value)
+          'result_is_correct_b - assert(d_b.head.value._1.result == AT('b, 20))
+          'one_result_b - assert(d_b.tail.isEmpty.value)
+        }
+
+        'derive_lt - {
+
+          val m1 = m0 tell AT('a, 10) tell AT('b, 20)
+
+          val d = m1 derive LT('a, 'b)
+
+          'got_result - assert(!d.isEmpty.value)
+          'result_is_correct - assert(d.head.value._1.result == LT('a, 'b))
+        }
+      }
+
+      'lt_eq - {
+
+        'when_lt - {
+
+          val m1 = m0 tell AT('a, 10) tell AT('b, 20)
+
+          val d = m1 derive LT_EQ('a, 'b)
+
+          'got_result - assert(!d.isEmpty.value)
+          'result_is_correct - assert(d.head.value._1.result == LT_EQ('a, 'b))
+
+          val k = d.head.value._2 know LT_EQ('a, 'b)
+
+          'known_after - assert(!k.isEmpty.value)
+        }
+
+        'when_eq - {
+
+          val m1 = m0 tell AT('a, 10) tell AT('b, 10)
+
+          val d = m1 derive LT_EQ('a, 'b)
+
+          'got_result - assert(!d.isEmpty.value)
+          'result_is_correct - assert(d.head.value._1.result == LT_EQ('a, 'b))
+
+          val k = d.head.value._2 know LT_EQ('a, 'b)
+
+          'known_after - assert(!k.isEmpty.value)
+        }
+
+      }
+
+      'eq - {
+
+        val m1 = m0 tell AT('a, 10) tell AT('b, 10)
+
+        val d = m1 derive EQ('a, 'b)
+
+        'got_result - assert(!d.isEmpty.value)
+        'result_is_correct - assert(d.head.value._1.result == EQ('a, 'b))
+
+        val k = d.head.value._2 know EQ('a, 'b)
+
+        'known_after - assert(!k.isEmpty.value)
+
+      }
+
+      'not_eq - {
+        val m1 = m0 tell AT('a, 10) tell AT('b, 20)
+
+        val d = m1 derive NOT_EQ('a, 'b)
+
+        'got_result - assert(!d.isEmpty.value)
+        'result_is_correct - assert(d.head.value._1.result == NOT_EQ('a, 'b))
+
+        val k = d.head.value._2 know NOT_EQ('a, 'b)
+
+        'known_after - assert(!k.isEmpty.value)
       }
     }
   }

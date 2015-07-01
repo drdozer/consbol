@@ -37,6 +37,15 @@ object Tell extends TellLowPriorityImplicits with TellLowLowPriorityImplicits {
       m merge (a.lhs, a.rhs)
   }
 
+  implicit def tell_eq_inv[V, I]
+  (implicit
+   vi: InterpretationSingleton[V, I], unify: UnifyI[I],
+   in: Interpretation[EQ[V], EQ[I], Model[V, I]])
+  : Tell[EQ[I], Model[V, I]] = new Tell[EQ[I], Model[V, I]] {
+    override def apply(a: EQ[I], m: Model[V, I]): Model[V, I] =
+      tell_eq[V, I].apply(in.unapply(a, m).get, m)
+  }
+
   implicit def tell_at[I]: Tell[AT[I], IndexModel[I]] = new Tell[AT[I], IndexModel[I]] {
     override def apply(a: AT[I], m: IndexModel[I]): IndexModel[I] = {
       m.copy(at = m.at + (a.point -> (m.at.getOrElse(a.point, Set()) + a.loc)))

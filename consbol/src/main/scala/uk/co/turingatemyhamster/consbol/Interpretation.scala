@@ -5,6 +5,7 @@ import scalaz.{Need, StreamT}
 
 trait Interpretation[TV, TI, M] {
   def apply(a: TV, m: M): (TI, M)
+  def unapply(a: TI, m: M): Option[TV]
 }
 
 object Interpretation {
@@ -12,6 +13,9 @@ object Interpretation {
   implicit class InterpretationOps[M](val _m: M) {
     def interpretation[TV, TI](a: TV)(implicit in: Interpretation[TV, TI, M]): (TI, M) =
       in.apply(a, _m)
+
+    def coimage[TV, TI](a: TI)(implicit in: Interpretation[TV, TI, M]): Option[TV] =
+      in.unapply(a, _m)
   }
 
   implicit def interpModel[V, I]
@@ -28,6 +32,9 @@ object Interpretation {
             eq = m0.eq + (aI -> Set(a)))
           (aI, m1)
       }
+
+    override def unapply(a: I, m: InterpModel[V, I]): Option[V] =
+      m.eq get a map (_.head)
   }
 
   implicit def model[V, I](implicit imI: Interpretation[V, I, InterpModel[V, I]])
@@ -36,6 +43,9 @@ object Interpretation {
       val (aI, i2) = m.i interpretation a
       (aI, m.copy(i = i2))
     }
+
+    override def unapply(a: I, m: Model[V, I]): Option[V] =
+      m.i coimage a
   }
 
   // fixme: should this be against InterpModel rather than Model?
@@ -44,10 +54,18 @@ object Interpretation {
   : Interpretation[A[V], A[I], Model[V, I]] = new Interpretation[A[V], A[I], Model[V, I]]
   {
     override def apply(a: A[V], m0: Model[V, I]): (A[I], Model[V, I]) = {
-      val (lhsV, rhsV) = vOp.decompose(a)
+      val (lhsV, rhsV) = vOp decompose a
       val (lhsI, m1) = m0 interpretation lhsV
       val (rhsI, m2) = m1 interpretation rhsV
       iOp.recompose(lhsI, rhsI) -> m2
+    }
+
+    override def unapply(a: A[I], m: Model[V, I]): Option[A[V]] = {
+      val (lhsI, rhsI) = iOp decompose a
+      for {
+        lhsV <- m coimage lhsI
+        rhsV <- m coimage rhsI
+      } yield vOp.recompose(lhsV, rhsV)
     }
   }
 
@@ -59,6 +77,9 @@ object Interpretation {
       val (pointI, m1) = m0 interpretation a.point
       AT(pointI, a.loc) -> m1
     }
+
+    override def unapply(a: AT[I], m: Model[V, I]): Option[AT[V]] =
+      m coimage a.point map (pV => AT(pV, a.loc))
   }
 }
 

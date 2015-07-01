@@ -84,6 +84,25 @@ object Know extends KnowLowPriorityImplicits with KnowLowLowPriorityImplicits {
           Done
       }
   }
+
+  implicit def know_at[I]: Know[AT, I, IndexModel[I]] = new Know[AT, I, IndexModel[I]] {
+    override def byLHS(lhs: I, m0: IndexModel[I]): TrueStream[Proof[AT[I]]] =
+      m0.at.get(lhs) match {
+        case Some(is) =>
+          TrueStream(is map (loc => Fact(AT(lhs, loc))))
+        case None =>
+          StreamT.empty
+      }
+
+    override def apply(a: AT[I], m0: IndexModel[I]): TrueStream[Proof[AT[I]]] =
+      StreamT apply Need {
+        m0.at.get(a.point) match {
+          case Some(is) if is contains a.loc =>
+            singleton(Fact(a))
+          case _ => Done
+        }
+      }
+  }
 }
 
 trait KnowLowPriorityImplicits {
@@ -110,6 +129,16 @@ trait KnowLowPriorityImplicits {
       m0.ord knowLHS lhs
   }
 
+  implicit def know_modelFromIndexe[A[_], V, I]
+  (implicit k: Know[A, I, IndexModel[I]])
+  : Know[A, I, Model[V, I]] = new Know[A, I, Model[V, I]] {
+    override def apply(a: A[I], m0: Model[V, I]): TrueStream[Proof[A[I]]] =
+      m0.index know a
+
+    override def byLHS(lhs: I, m0: Model[V, I]): TrueStream[Proof[A[I]]] =
+      m0.index knowLHS lhs
+  }
+
 }
 
 trait KnowLowLowPriorityImplicits {
@@ -119,7 +148,6 @@ trait KnowLowLowPriorityImplicits {
 
   implicit def know_usingInterpretation[A[_], V, I]
   (implicit
-   op: BinOp[A[V], V],
    inV: Interpretation[V, I, Model[V, I]],
    inA: Interpretation[A[V], A[I], Model[V, I]],
    k: Know[A, I, Model[V, I]])
@@ -131,7 +159,24 @@ trait KnowLowLowPriorityImplicits {
 
     override def byLHS(lhs: V, m0: Model[V, I]): TrueStream[Proof[A[V]]] = {
       val (lhs1, m1) = m0 interpretation lhs
-      m1 knowLHS lhs1 map (p => Interpreted(op.recompose(lhs, lhs), p))
+      m1 knowLHS lhs1 map (p => Interpreted(m1 coimage p.result get, p))
     }
   }
+
+//  implicit def know_usingAtInterpretation[V, I]
+//  (implicit
+//   inV: Interpretation[V, I, Model[V, I]],
+//   inA: Interpretation[AT[V], AT[I], Model[V, I]],
+//   k: Know[AT, I, Model[V, I]])
+//   : Know[AT, Symbol, Model[Symbol, String]] = new Know[AT, Symbol, Model[Symbol, String]] {
+//    override def apply(a: AT[Symbol], m0: Model[Symbol, String]): TrueStream[Proof[AT[Symbol]]] = {
+//      val (pointI, m1) = m0 interpretation a.point
+//      m1 know AT(pointI, a.loc) map (p => Interpreted(a, p))
+//    }
+//
+//    override def byLHS(lhs: Symbol, m0: Model[Symbol, String]): TrueStream[Proof[AT[Symbol]]] = {
+//      val (pointI, m1) = m0 interpretation lhs
+//      m1 knowLHS pointI map (p => Interpreted(AT(lhs, p)))
+//    }
+//  }
 }

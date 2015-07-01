@@ -74,6 +74,28 @@ object KnowTestSuite extends TestSuite {
         'got_right_result - assert(k.head.value.result == EQ('a, 'b))
         'got_only_one_result - assert(k.tail.isEmpty.value)
       }
+
+      'at - {
+
+        'implicits - {
+          implicitly[Know[AT, String, IndexModel[String]]]
+          implicitly[Know[AT, String, Model[Symbol, String]]]
+          implicitly[Interpretation[AT[Symbol], AT[String], Model[Symbol, String]]]
+          Know.know_usingInterpretation[AT, Symbol, String]
+          implicitly[Know[AT, Symbol, Model[Symbol, String]]]
+        }
+
+        val m1 = m0 tell AT('a, 11)
+
+        val ka_11 = m1 know AT('a, 11)
+        val ka_12 = m1 know AT('a, 12)
+
+        'got_result_11 - assert(!ka_11.isEmpty.value)
+        'got_right_result_11 - assert(ka_11.head.value.result == AT('a, 11))
+        'got_only_one_result_11 - assert(ka_11.tail.isEmpty.value)
+
+        'got_no_result_12 - assert(ka_12.isEmpty.value)
+      }
     }
   }
 
