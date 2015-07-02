@@ -47,7 +47,7 @@ object Derive extends DeriveLowPriorityImpicits {
 
         k1 mappend {
           val m1 = lastModel(k1, m0)
-          val k2 = `lt_at` apply (a, g, m1)
+          val k2 = lt_at apply (a, g, m1)
 
           k2 mappend {
             val m2 = lastModel(k2, m1)
@@ -199,7 +199,7 @@ object Derive extends DeriveLowPriorityImpicits {
 
         k1 mappend {
           val m1 = lastModel(k1, m0)
-          val k2 = `not_eq_at` apply(a, g, m0)
+          val k2 = not_eq_at apply(a, g, m0)
 
           k2 mappend {
             val m2 = lastModel(k2, m1)
@@ -223,7 +223,7 @@ object Derive extends DeriveLowPriorityImpicits {
       m0 know a map (_ -> m0)
   }
 
-  def `lt_at`[R, V, I]
+  def lt_at[R, V, I]
   : Derive[LT[I], Model[R, V, I]] = new Derive[LT[I], Model[R, V, I]] {
     override def apply(a: LT[I], goals: Set[Object], m0: Model[R, V, I]): TrueStream[(Proof[LT[I]], Model[R, V, I])] =
       for {
@@ -234,7 +234,7 @@ object Derive extends DeriveLowPriorityImpicits {
       Rule2("lt_at", a, atLHS, atRHS) -> (m0 tell a)
   }
 
-  def `lt_eq_at`[R, V, I]
+  def lt_eq_at[R, V, I]
   : Derive[LT_EQ[I], Model[R, V, I]] = new Derive[LT_EQ[I], Model[R, V, I]] {
     override def apply(a: LT_EQ[I], goals: Set[Object], m0: Model[R, V, I]): TrueStream[(Proof[LT_EQ[I]], Model[R, V, I])] =
       for {
@@ -245,7 +245,7 @@ object Derive extends DeriveLowPriorityImpicits {
       Rule2("lt_eq_at", a, atLHS, atRHS) -> (m0 tell a)
   }
 
-  def `eq_at`[R, V, I]
+  def eq_at[R, V, I]
   (implicit
    vi: InterpretationSingleton[V, I], unify: UnifyI[I],
    in: Interpretation[EQ[V], EQ[I], Model[R, V, I]])
@@ -259,7 +259,7 @@ object Derive extends DeriveLowPriorityImpicits {
       Rule2("lt_eq_at", a, atLHS, atRHS) -> (m0 tell a)
   }
 
-  def `not_eq_at`[R, V, I]
+  def not_eq_at[R, V, I]
   : Derive[NOT_EQ[I], Model[R, V, I]] = new Derive[NOT_EQ[I], Model[R, V, I]] {
     override def apply(a: NOT_EQ[I], goals: Set[Object], m0: Model[R, V, I]): TrueStream[(Proof[NOT_EQ[I]], Model[R, V, I])] =
       for {
@@ -268,6 +268,27 @@ object Derive extends DeriveLowPriorityImpicits {
         if(atLHS.result.loc != atRHS.result.loc)
       } yield
       Rule2("lt_eq_at", a, atLHS, atRHS) -> (m0 tell a)
+  }
+
+  implicit def strand[R, V, I]
+  : Derive[Strand[R], Model[R, V, I]] = new Derive[Strand[R], Model[R, V, I]] {
+    override def apply(a: Strand[R], goals: Set[Object], m0: Model[R, V, I]): TrueStream[(Proof[Strand[R]], Model[R, V, I])] =
+      if(goals contains a) {
+        StreamT.empty
+      } else {
+        val g = goals + a
+        val k1 = m0 know a map (_ -> m0)
+
+        k1 /* mappend {
+          val m1 = lastModel(k1, m0)
+          val k2 = not_eq_at apply(a, g, m0)
+
+          k2 mappend {
+            val m2 = lastModel(k2, m1)
+            `noteq_<_>` apply (a, g, m2)
+          }
+        } */
+      }
   }
 }
 

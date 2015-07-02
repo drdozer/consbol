@@ -274,5 +274,19 @@ object DeriveTestSuite extends TestSuite {
         'known_after - assert(!k.isEmpty.value)
       }
     }
+
+    'derive_strand - {
+      'implicits {
+        implicitly[Derive[Strand[Symbol], Model[Symbol, Symbol, String]]]
+      }
+
+      val m1 = m0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-) tell Strand('t, Orientation.+)
+
+      val kr = m1 derive Strand('r, Orientation.+)
+      val ks = m1 derive Strand('s, Orientation.-)
+      val kt = m1 derive Strand('t, Orientation.+)
+
+
+    }
   }
 }
