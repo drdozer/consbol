@@ -102,20 +102,33 @@ object TellTestSuite extends TestSuite {
       }
 
       'strand - {
+        'orientation {
 
-        'implicits - {
-          implicitly[Tell[Strand[Symbol], StrandModel[Symbol]]]
-          implicitly[Tell[Strand[Symbol], Model[Symbol, Symbol, String]]]
+          'implicits - {
+            implicitly[Tell[Strand[Symbol], StrandModel[Symbol]]]
+            implicitly[Tell[Strand[Symbol], Model[Symbol, Symbol, String]]]
+          }
+
+          val m1 = m0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.+) tell Strand('s, Orientation.-)
+
+          'strand_r - assert(m1.str.strand.contains('r))
+          'strand_r_pos - assert(m1.str.strand('r) contains Orientation.+)
+
+          'strand_s - assert(m1.str.strand.contains('s))
+          'strand_s_pos - assert(m1.str.strand('s) contains Orientation.+)
+          'strand_s_neg - assert(m1.str.strand('s) contains Orientation.-)
         }
 
-        val m1 = m0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.+) tell Strand('s, Orientation.-)
+        'same_strand_as {
+          'implicits - {
+            implicitly[Tell[Strand[Symbol], StrandModel[Symbol]]]
+            implicitly[Tell[Strand[Symbol], Model[Symbol, Symbol, String]]]
+          }
 
-        'strand_r - assert(m1.str.strand.contains('r))
-        'strand_r_pos - assert(m1.str.strand('r) contains Orientation.+)
+          val m1 = m0 tell SameStrandAs('r, 's)
 
-        'strand_s - assert(m1.str.strand.contains('s))
-        'strand_s_pos - assert(m1.str.strand('s) contains Orientation.+)
-        'strand_s_neg - assert(m1.str.strand('s) contains Orientation.-)
+          assert(m1.str.same_strand_as contains ('r -> 's))
+        }
       }
     }
 

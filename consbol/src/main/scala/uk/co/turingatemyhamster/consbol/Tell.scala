@@ -9,11 +9,21 @@ trait Tell[A, M] {
   def apply(a: A, m: M): M
 }
 
-object Tell extends TellLowPriorityImplicits with TellLowLowPriorityImplicits {
+object Tell
+  extends TellOrdModel
+  with TellLocationModel
+  with TellStrandModel
+  with TellLowPriorityImplicits
+  with TellLowLowPriorityImplicits
+{
 
   implicit class TellOps[M](val m: M) {
     def tell[A](a: A)(implicit t: Tell[A, M]): M = t(a, m)
   }
+
+}
+
+trait TellOrdModel {
 
   implicit def tell_lt[I]: Tell[LT[I], OrdModel[I]] = new Tell[LT[I], OrdModel[I]] {
     override def apply(a: LT[I], m: OrdModel[I]): OrdModel[I] =
@@ -46,16 +56,30 @@ object Tell extends TellLowPriorityImplicits with TellLowLowPriorityImplicits {
       tell_eq[R, V, I].apply(in.unapply(a, m).get, m)
   }
 
+}
+
+trait TellLocationModel {
+
   implicit def tell_at[I]: Tell[AT[I], IndexModel[I]] = new Tell[AT[I], IndexModel[I]] {
     override def apply(a: AT[I], m: IndexModel[I]): IndexModel[I] = {
       m.copy(at = m.at + (a.point -> (m.at.getOrElse(a.point, Set()) + a.loc)))
     }
   }
 
+}
+
+trait TellStrandModel {
+
   implicit def tell_strand[R]: Tell[Strand[R], StrandModel[R]] = new Tell[Strand[R], StrandModel[R]] {
     override def apply(a: Strand[R], m: StrandModel[R]): StrandModel[R] =
       m.copy(strand = m.strand + (a.range -> (m.strand.getOrElse(a.range, Set()) + a.orient)))
   }
+
+  implicit def tell_same_strand_as[R]: Tell[SameStrandAs[R], StrandModel[R]] = new Tell[SameStrandAs[R], StrandModel[R]] {
+    override def apply(a: SameStrandAs[R], m: StrandModel[R]): StrandModel[R] =
+      m.copy(same_strand_as = m.same_strand_as + (a.lhs -> a.rhs))
+  }
+
 }
 
 trait TellLowPriorityImplicits {

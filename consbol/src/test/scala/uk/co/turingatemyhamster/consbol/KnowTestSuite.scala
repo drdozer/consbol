@@ -109,8 +109,20 @@ object KnowTestSuite extends TestSuite {
 
         'got_result - assert(!k.isEmpty.value)
         'got_right_result - assert(k.head.value.result == Strand('r, Orientation.+))
-        'got_only_one_result - assert(k.tail.isEmpty.value)
+      }
 
+      'same_strand_as - {
+
+        'implicits - {
+          implicitly[Know[SameStrandAs, Symbol, StrandModel[Symbol]]]
+          implicitly[Know[SameStrandAs, Symbol, Model[Symbol, Symbol, String]]]
+        }
+
+        val m1 = m0 tell SameStrandAs('r, 's)
+        val k = m1 know SameStrandAs('r, 's)
+
+        'got_result - assert(!k.isEmpty.value)
+        'got_right_result - assert(k.head.value.result == SameStrandAs('r, 's))
       }
     }
   }

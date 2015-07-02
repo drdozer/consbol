@@ -282,11 +282,59 @@ object DeriveTestSuite extends TestSuite {
 
       val m1 = m0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-) tell Strand('t, Orientation.+)
 
-      val kr = m1 derive Strand('r, Orientation.+)
-      val ks = m1 derive Strand('s, Orientation.-)
-      val kt = m1 derive Strand('t, Orientation.+)
+      val dr = m1 derive Strand('r, Orientation.+)
+      val ds = m1 derive Strand('s, Orientation.-)
+      val dt = m1 derive Strand('t, Orientation.+)
 
+      'got_result_r - assert(!dr.isEmpty.value)
+      'got_corret_result_r - assert(dr.head.value._1.result == Strand('r, Orientation.+))
 
+      'got_result_s - assert(!ds.isEmpty.value)
+      'got_corret_result_s - assert(ds.head.value._1.result == Strand('s, Orientation.-))
+
+      'got_result_t - assert(!dt.isEmpty.value)
+      'got_corret_result_t - assert(dt.head.value._1.result == Strand('t, Orientation.+))
+
+    }
+
+    'derive_same_strand_as - {
+//      'implicits {
+//        implicitly[Derive[SameStrandAs[Symbol], Model[Symbol, Symbol, String]]]
+//      }
+//
+//      'from_tell - {
+//        val m1 = m0 tell SameStrandAs('r, 's)
+//        val d = m1 derive SameStrandAs('r, 's)
+//
+//        'got_result - assert(!d.isEmpty.value)
+//        'result_is_correct - assert(d.head.value._1.result == SameStrandAs('r, 's))
+//
+//      }
+//
+//      'from_strand - {
+//        val m1 = m0 tell Strand('r, Orientation.-) tell Strand('s, Orientation.-)
+//        val d = m1 derive SameStrandAs('r, 's)
+//
+//        'got_result - assert(!d.isEmpty.value)
+//        'result_is_correct - assert(d.head.value._1.result == SameStrandAs('r, 's))
+//
+//      }
+//
+//      'same_strand_implies_strand_lr - {
+//        val m1 = m0 tell Strand('s, Orientation.+) tell SameStrandAs('r, 's)
+//        val d = m1 derive Strand('r, Orientation.+)
+//
+//        'got_result - assert(!d.isEmpty.value)
+//        'result_is_correct - assert(d.head.value._1.result == Strand('r, Orientation.+))
+//      }
+
+      'same_strand_implies_strand_rl - {
+        val m1 = m0 tell Strand('s, Orientation.+) tell SameStrandAs('s, 'r)
+        val d = m1 derive Strand('r, Orientation.+)
+
+        'got_result - assert(!d.isEmpty.value)
+        'result_is_correct - assert(d.head.value._1.result == Strand('r, Orientation.+))
+      }
     }
   }
 }

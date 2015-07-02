@@ -11,7 +11,13 @@ trait Know[A[_], T, M] {
   def byLHS(lhs: T, m0: M): TrueStream[Proof[A[T]]]
 }
 
-object Know extends KnowLowPriorityImplicits with KnowLowLowPriorityImplicits {
+object Know
+  extends KnowOrdModel
+  with KnowIndexModel
+  with KnowStrandModel
+  with KnowLowPriorityImplicits
+  with KnowLowLowPriorityImplicits
+{
 
   implicit class KnowOps[M](val m: M) {
     def know[A[_], T](a: A[T])(implicit k: Know[A, T, M]) =
@@ -20,6 +26,10 @@ object Know extends KnowLowPriorityImplicits with KnowLowLowPriorityImplicits {
     def knowLHS[A[_], T](lhs: T)(implicit k: Know[A, T, M]) =
       k.byLHS(lhs, m)
   }
+
+}
+
+trait KnowOrdModel {
 
   implicit def know_lt[I]: Know[LT, I, OrdModel[I]] = new Know[LT, I, OrdModel[I]] {
     override def apply(a: LT[I], m0: OrdModel[I]): TrueStream[Proof[LT[I]]] =
@@ -85,6 +95,10 @@ object Know extends KnowLowPriorityImplicits with KnowLowLowPriorityImplicits {
       }
   }
 
+}
+
+trait KnowIndexModel {
+
   implicit def know_at[I]: Know[AT, I, IndexModel[I]] = new Know[AT, I, IndexModel[I]] {
     override def byLHS(lhs: I, m0: IndexModel[I]): TrueStream[Proof[AT[I]]] =
       m0.at.get(lhs) match {
@@ -105,6 +119,10 @@ object Know extends KnowLowPriorityImplicits with KnowLowLowPriorityImplicits {
       }
   }
 
+}
+
+trait KnowStrandModel {
+
   implicit def know_strand[R]: Know[Strand, R, StrandModel[R]] = new Know[Strand, R, StrandModel[R]] {
     override def byLHS(lhs: R, m0: StrandModel[R]): TrueStream[Proof[Strand[R]]] =
       m0.strand.get(lhs) match {
@@ -122,6 +140,19 @@ object Know extends KnowLowPriorityImplicits with KnowLowLowPriorityImplicits {
           case _ =>
             Done
         }
+      }
+  }
+
+  implicit def know_same_strand_as[R]: Know[SameStrandAs, R, StrandModel[R]] = new Know[SameStrandAs, R, StrandModel[R]] {
+    override def byLHS(lhs: R, m0: StrandModel[R]): TrueStream[Proof[SameStrandAs[R]]] =
+      TrueStream(m0.same_strand_as.filter(_._1 == lhs) map { case (l, r) => Fact(SameStrandAs(l, r)) })
+
+    override def apply(a: SameStrandAs[R], m0: StrandModel[R]): TrueStream[Proof[SameStrandAs[R]]] =
+      StreamT apply Need {
+        if(m0.same_strand_as contains (a.lhs -> a.rhs))
+          singleton(Fact(a))
+        else
+          Done
       }
   }
 }
