@@ -51,6 +51,11 @@ object Tell extends TellLowPriorityImplicits with TellLowLowPriorityImplicits {
       m.copy(at = m.at + (a.point -> (m.at.getOrElse(a.point, Set()) + a.loc)))
     }
   }
+
+  implicit def tell_strand[R]: Tell[Strand[R], StrandModel[R]] = new Tell[Strand[R], StrandModel[R]] {
+    override def apply(a: Strand[R], m: StrandModel[R]): StrandModel[R] =
+      m.copy(strand = m.strand + (a.range -> (m.strand.getOrElse(a.range, Set()) + a.orient)))
+  }
 }
 
 trait TellLowPriorityImplicits {
@@ -66,6 +71,12 @@ trait TellLowPriorityImplicits {
   (implicit t: Tell[A[I], IndexModel[I]]): Tell[A[I], Model[R, V, I]] = new Tell[A[I], Model[R, V, I]] {
     override def apply(a: A[I], m: Model[R, V, I]): Model[R, V, I] =
       m.copy(index = m.index tell a)
+  }
+
+  implicit def tell_usingStrandModel[A[_], R, V, I]
+  (implicit t: Tell[A[R], StrandModel[R]]): Tell[A[R], Model[R, V, I]] = new Tell[A[R], Model[R, V, I]] {
+    override def apply(a: A[R], m: Model[R, V, I]): Model[R, V, I] =
+      m.copy(str = m.str tell a)
   }
 
 }

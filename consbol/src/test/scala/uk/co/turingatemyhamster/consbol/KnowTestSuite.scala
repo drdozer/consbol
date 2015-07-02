@@ -95,6 +95,23 @@ object KnowTestSuite extends TestSuite {
 
         'got_no_result_12 - assert(ka_12.isEmpty.value)
       }
+
+      'strand - {
+
+        'implicits - {
+          implicitly[Know[Strand, Symbol, StrandModel[Symbol]]]
+          implicitly[Know[Strand, Symbol, Model[Symbol, Symbol, String]]]
+        }
+
+        val m1 = m0 tell Strand('r, Orientation.+)
+
+        val k = m1 know Strand('r, Orientation.+)
+
+        'got_result - assert(!k.isEmpty.value)
+        'got_right_result - assert(k.head.value.result == Strand('r, Orientation.+))
+        'got_only_one_result - assert(k.tail.isEmpty.value)
+
+      }
     }
   }
 

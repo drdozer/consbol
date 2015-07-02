@@ -99,7 +99,28 @@ object Know extends KnowLowPriorityImplicits with KnowLowLowPriorityImplicits {
         m0.at.get(a.point) match {
           case Some(is) if is contains a.loc =>
             singleton(Fact(a))
-          case _ => Done
+          case _ =>
+            Done
+        }
+      }
+  }
+
+  implicit def know_strand[R]: Know[Strand, R, StrandModel[R]] = new Know[Strand, R, StrandModel[R]] {
+    override def byLHS(lhs: R, m0: StrandModel[R]): TrueStream[Proof[Strand[R]]] =
+      m0.strand.get(lhs) match {
+        case Some(ss) =>
+          TrueStream(ss map (s => Fact(Strand(lhs, s))))
+        case None =>
+          StreamT.empty
+      }
+
+    override def apply(a: Strand[R], m0: StrandModel[R]): TrueStream[Proof[Strand[R]]] =
+      StreamT apply Need {
+        m0.strand.get(a.range) match {
+          case Some(ss) if ss contains a.orient =>
+            singleton(Fact(a))
+          case _ =>
+            Done
         }
       }
   }
@@ -129,7 +150,7 @@ trait KnowLowPriorityImplicits {
       m0.ord knowLHS lhs
   }
 
-  implicit def know_modelFromIndexe[A[_], R, V, I]
+  implicit def know_modelFromIndex[A[_], R, V, I]
   (implicit k: Know[A, I, IndexModel[I]])
   : Know[A, I, Model[R, V, I]] = new Know[A, I, Model[R, V, I]] {
     override def apply(a: A[I], m0: Model[R, V, I]): TrueStream[Proof[A[I]]] =
@@ -137,6 +158,16 @@ trait KnowLowPriorityImplicits {
 
     override def byLHS(lhs: I, m0: Model[R, V, I]): TrueStream[Proof[A[I]]] =
       m0.index knowLHS lhs
+  }
+
+  implicit def know_modelFromStrand[A[_], R, V, I]
+  (implicit k: Know[A, R, StrandModel[R]])
+  : Know[A, R, Model[R, V, I]] = new Know[A, R, Model[R, V, I]] {
+    override def apply(a: A[R], m0: Model[R, V, I]): TrueStream[Proof[A[R]]] =
+      m0.str know a
+
+    override def byLHS(lhs: R, m0: Model[R, V, I]): TrueStream[Proof[A[R]]] =
+      m0.str knowLHS lhs
   }
 
 }

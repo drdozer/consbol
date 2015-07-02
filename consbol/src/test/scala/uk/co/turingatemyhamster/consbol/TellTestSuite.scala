@@ -103,10 +103,19 @@ object TellTestSuite extends TestSuite {
 
       'strand - {
 
-        val m1 = m0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.+) tell Strand('t, Orientation.-)
+        'implicits - {
+          implicitly[Tell[Strand[Symbol], StrandModel[Symbol]]]
+          implicitly[Tell[Strand[Symbol], Model[Symbol, Symbol, String]]]
+        }
+
+        val m1 = m0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.+) tell Strand('s, Orientation.-)
 
         'strand_r - assert(m1.str.strand.contains('r))
-        'strand_r_pos - assert(m1.str.strand('r) == Orientation.+)
+        'strand_r_pos - assert(m1.str.strand('r) contains Orientation.+)
+
+        'strand_s - assert(m1.str.strand.contains('s))
+        'strand_s_pos - assert(m1.str.strand('s) contains Orientation.+)
+        'strand_s_neg - assert(m1.str.strand('s) contains Orientation.-)
       }
     }
 
