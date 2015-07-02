@@ -109,33 +109,33 @@ trait KnowLowPriorityImplicits {
   
   import Know.KnowOps
 
-  implicit def know_modelFromInterp[A[_], V, I]
+  implicit def know_modelFromInterp[A[_], R, V, I]
   (implicit k: Know[A, I, InterpModel[V, I]])
-  : Know[A, I, Model[V, I]] = new Know[A, I, Model[V, I]] {
-    override def apply(a: A[I], m0: Model[V, I]): TrueStream[Proof[A[I]]] =
+  : Know[A, I, Model[R, V, I]] = new Know[A, I, Model[R, V, I]] {
+    override def apply(a: A[I], m0: Model[R, V, I]): TrueStream[Proof[A[I]]] =
       m0.i know a
 
-    override def byLHS(lhs: I, m0: Model[V, I]): TrueStream[Proof[A[I]]] =
+    override def byLHS(lhs: I, m0: Model[R, V, I]): TrueStream[Proof[A[I]]] =
       m0.i knowLHS lhs
   }
 
-  implicit def know_modelFromOrd[A[_], V, I]
+  implicit def know_modelFromOrd[A[_], R, V, I]
   (implicit k: Know[A, I, OrdModel[I]])
-  : Know[A, I, Model[V, I]] = new Know[A, I, Model[V, I]] {
-    override def apply(a: A[I], m0: Model[V, I]): TrueStream[Proof[A[I]]] =
+  : Know[A, I, Model[R, V, I]] = new Know[A, I, Model[R, V, I]] {
+    override def apply(a: A[I], m0: Model[R, V, I]): TrueStream[Proof[A[I]]] =
       m0.ord know a
 
-    override def byLHS(lhs: I, m0: Model[V, I]): TrueStream[Proof[A[I]]] =
+    override def byLHS(lhs: I, m0: Model[R, V, I]): TrueStream[Proof[A[I]]] =
       m0.ord knowLHS lhs
   }
 
-  implicit def know_modelFromIndexe[A[_], V, I]
+  implicit def know_modelFromIndexe[A[_], R, V, I]
   (implicit k: Know[A, I, IndexModel[I]])
-  : Know[A, I, Model[V, I]] = new Know[A, I, Model[V, I]] {
-    override def apply(a: A[I], m0: Model[V, I]): TrueStream[Proof[A[I]]] =
+  : Know[A, I, Model[R, V, I]] = new Know[A, I, Model[R, V, I]] {
+    override def apply(a: A[I], m0: Model[R, V, I]): TrueStream[Proof[A[I]]] =
       m0.index know a
 
-    override def byLHS(lhs: I, m0: Model[V, I]): TrueStream[Proof[A[I]]] =
+    override def byLHS(lhs: I, m0: Model[R, V, I]): TrueStream[Proof[A[I]]] =
       m0.index knowLHS lhs
   }
 
@@ -146,18 +146,18 @@ trait KnowLowLowPriorityImplicits {
   import Know.KnowOps
   import Interpretation.InterpretationOps
 
-  implicit def know_usingInterpretation[A[_], V, I]
+  implicit def know_usingInterpretation[A[_], R, V, I]
   (implicit
-   inV: Interpretation[V, I, Model[V, I]],
-   inA: Interpretation[A[V], A[I], Model[V, I]],
-   k: Know[A, I, Model[V, I]])
-  : Know[A, V, Model[V, I]] = new Know[A, V, Model[V, I]] {
-    override def apply(a: A[V], m0: Model[V, I]): TrueStream[Proof[A[V]]] = {
+   inV: Interpretation[V, I, Model[R, V, I]],
+   inA: Interpretation[A[V], A[I], Model[R, V, I]],
+   k: Know[A, I, Model[R, V, I]])
+  : Know[A, V, Model[R, V, I]] = new Know[A, V, Model[R, V, I]] {
+    override def apply(a: A[V], m0: Model[R, V, I]): TrueStream[Proof[A[V]]] = {
       val (a1, m1) = m0 interpretation a
       m1 know a1 map (p => Interpreted(a, p))
     }
 
-    override def byLHS(lhs: V, m0: Model[V, I]): TrueStream[Proof[A[V]]] = {
+    override def byLHS(lhs: V, m0: Model[R, V, I]): TrueStream[Proof[A[V]]] = {
       val (lhs1, m1) = m0 interpretation lhs
       m1 knowLHS lhs1 map (p => Interpreted(m1 coimage p.result get, p))
     }

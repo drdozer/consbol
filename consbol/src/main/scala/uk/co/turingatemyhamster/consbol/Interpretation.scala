@@ -37,30 +37,30 @@ object Interpretation {
       m.eq get a map (_.head)
   }
 
-  implicit def model[V, I](implicit imI: Interpretation[V, I, InterpModel[V, I]])
-  : Interpretation[V, I, Model[V, I]] = new Interpretation[V, I, Model[V, I]] {
-    override def apply(a: V, m: Model[V, I]): (I, Model[V, I]) = {
+  implicit def model[R, V, I](implicit imI: Interpretation[V, I, InterpModel[V, I]])
+  : Interpretation[V, I, Model[R, V, I]] = new Interpretation[V, I, Model[R, V, I]] {
+    override def apply(a: V, m: Model[R, V, I]): (I, Model[R, V, I]) = {
       val (aI, i2) = m.i interpretation a
       (aI, m.copy(i = i2))
     }
 
-    override def unapply(a: I, m: Model[V, I]): Option[V] =
+    override def unapply(a: I, m: Model[R, V, I]): Option[V] =
       m.i coimage a
   }
 
   // fixme: should this be against InterpModel rather than Model?
-  implicit def opInterpolation[A[_], V, I]
-  (implicit vOp: BinOp[A, V], iOp: BinOp[A, I], viI: Interpretation[V, I, Model[V, I]])
-  : Interpretation[A[V], A[I], Model[V, I]] = new Interpretation[A[V], A[I], Model[V, I]]
+  implicit def opInterpolation[A[_], R, V, I]
+  (implicit vOp: BinOp[A, V], iOp: BinOp[A, I], viI: Interpretation[V, I, Model[R, V, I]])
+  : Interpretation[A[V], A[I], Model[R, V, I]] = new Interpretation[A[V], A[I], Model[R, V, I]]
   {
-    override def apply(a: A[V], m0: Model[V, I]): (A[I], Model[V, I]) = {
+    override def apply(a: A[V], m0: Model[R, V, I]): (A[I], Model[R, V, I]) = {
       val (lhsV, rhsV) = vOp decompose a
       val (lhsI, m1) = m0 interpretation lhsV
       val (rhsI, m2) = m1 interpretation rhsV
       iOp.recompose(lhsI, rhsI) -> m2
     }
 
-    override def unapply(a: A[I], m: Model[V, I]): Option[A[V]] = {
+    override def unapply(a: A[I], m: Model[R, V, I]): Option[A[V]] = {
       val (lhsI, rhsI) = iOp decompose a
       for {
         lhsV <- m coimage lhsI
@@ -70,15 +70,15 @@ object Interpretation {
   }
 
   // fixme: should this be against InterpModel rather than Model?
-  implicit def atInterpretation[V, I]
-  (implicit viI: Interpretation[V, I, Model[V, I]])
-  : Interpretation[AT[V], AT[I], Model[V, I]] = new Interpretation[AT[V], AT[I], Model[V, I]] {
-    override def apply(a: AT[V], m0: Model[V, I]): (AT[I], Model[V, I]) = {
+  implicit def atInterpretation[R, V, I]
+  (implicit viI: Interpretation[V, I, Model[R, V, I]])
+  : Interpretation[AT[V], AT[I], Model[R, V, I]] = new Interpretation[AT[V], AT[I], Model[R, V, I]] {
+    override def apply(a: AT[V], m0: Model[R, V, I]): (AT[I], Model[R, V, I]) = {
       val (pointI, m1) = m0 interpretation a.point
       AT(pointI, a.loc) -> m1
     }
 
-    override def unapply(a: AT[I], m: Model[V, I]): Option[AT[V]] =
+    override def unapply(a: AT[I], m: Model[R, V, I]): Option[AT[V]] =
       m coimage a.point map (pV => AT(pV, a.loc))
   }
 }

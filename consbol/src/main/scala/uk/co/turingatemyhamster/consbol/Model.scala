@@ -6,12 +6,18 @@ import Interpretation._
 /**
  * Created by nmrp3 on 28/06/15.
  */
-case class Model[V, I](i: InterpModel[V, I],
-                       ord: OrdModel[I],
-                       index: IndexModel[I])
+case class Model[R, V, I](i: InterpModel[V, I],
+                          ord: OrdModel[I],
+                          index: IndexModel[I],
+                          str: StrandModel[R])
 {
 
-  def merge(a: V, b: V)(implicit vi: InterpretationSingleton[V, I], unify: UnifyI[I], u: Unifier[I, Model[V, I]]): Model[V, I] = {
+  def merge(a: V, b: V)
+           (implicit
+            vi: InterpretationSingleton[V, I],
+            unify: UnifyI[I],
+            u: Unifier[I, Model[R, V, I]]): Model[R, V, I] =
+  {
     if(a == b) {
       this
     } else {
@@ -31,10 +37,11 @@ case class Model[V, I](i: InterpModel[V, I],
 }
 
 object Model {
-  def empty[V, I]: Model[V, I] = Model(
+  def empty[R, V, I]: Model[R, V, I] = Model(
     i = InterpModel(),
     ord = OrdModel(),
-    index = IndexModel())
+    index = IndexModel(),
+    str = StrandModel())
 }
 
 
@@ -46,3 +53,5 @@ case class InterpModel[V, I](v2i: Map[V, I] = Map.empty[V, I],
 case class OrdModel[I](lt: Set[(I, I)] = Set.empty[(I, I)],
                        lt_eq: Set[(I, I)] = Set.empty[(I, I)],
                        not_eq: Set[(I, I)] = Set.empty[(I, I)])
+
+case class StrandModel[R](strand: Map[R, Set[Orientation]] = Map.empty[R, Set[Orientation]])

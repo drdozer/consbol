@@ -18,15 +18,17 @@ object Unifier {
         if(j == a || j == b) x else j)
   }
 
-  implicit def modelUnifier[V, I](implicit
-                                  iU: Unifier[I, InterpModel[V, I]],
-                                  ordU: Unifier[I, OrdModel[I]],
-                                  indexU: Unifier[I, IndexModel[I]]): Unifier[I, Model[V, I]] = new Unifier[I, Model[V, I]] {
-    override def apply(aI: I, bI: I, uI: I, m: Model[V, I]): Model[V, I] =
+  implicit def modelUnifier[R, V, I]
+  (implicit
+   iU: Unifier[I, InterpModel[V, I]],
+   ordU: Unifier[I, OrdModel[I]],
+   indexU: Unifier[I, IndexModel[I]]): Unifier[I, Model[R, V, I]] = new Unifier[I, Model[R, V, I]] {
+    override def apply(aI: I, bI: I, uI: I, m: Model[R, V, I]): Model[R, V, I] =
       Model(
         i = iU(aI, bI, uI, m.i),
         ord = ordU(aI, bI, uI, m.ord),
-        index = indexU(aI, bI, uI, m.index))
+        index = indexU(aI, bI, uI, m.index),
+        str = m.str)
   }
 
   implicit def interpretationUnifier[V, I]: Unifier[I, InterpModel[V, I]] = new Unifier[I, InterpModel[V, I]] {

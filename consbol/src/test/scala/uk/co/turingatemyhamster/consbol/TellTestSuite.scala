@@ -9,17 +9,17 @@ object TellTestSuite extends TestSuite {
     import Tell._
 
     'tell - {
-      val m0 = Model.empty[Symbol, String]
+      val m0 = Model.empty[Symbol, Symbol, String]
 
       'lt - {
 
         'implicits - {
           implicitly[Tell[LT[String], OrdModel[String]]]
-          implicitly[Tell[LT[String], Model[Symbol, String]]]
+          implicitly[Tell[LT[String], Model[Symbol, Symbol, String]]]
           implicitly[InterpretationSingleton[Symbol, String]]
-          implicitly[Interpretation[Symbol, String, Model[Symbol, String]]]
-          implicitly[Interpretation[LT[Symbol], LT[String], Model[Symbol, String]]]
-          implicitly[Tell[LT[Symbol], Model[Symbol, String]]]
+          implicitly[Interpretation[Symbol, String, Model[Symbol, Symbol, String]]]
+          implicitly[Interpretation[LT[Symbol], LT[String], Model[Symbol, Symbol, String]]]
+          implicitly[Tell[LT[Symbol], Model[Symbol, Symbol, String]]]
         }
 
         val m1 = m0 tell LT('a, 'b)
@@ -66,7 +66,7 @@ object TellTestSuite extends TestSuite {
       'eq - {
         'implicits - {
           implicitly[InterpretationSingleton[Symbol, String]]
-          implicitly[Tell[EQ[Symbol], Model[Symbol, String]]]
+          implicitly[Tell[EQ[Symbol], Model[Symbol, Symbol, String]]]
         }
 
         val m1 = m0 tell EQ('a, 'b)
@@ -83,9 +83,9 @@ object TellTestSuite extends TestSuite {
       'at - {
         'implicits - {
           implicitly[Tell[AT[String], IndexModel[String]]]
-          implicitly[Tell[AT[String], Model[Symbol, String]]]
-          implicitly[Interpretation[AT[Symbol], AT[String], Model[Symbol, String]]]
-          implicitly[Tell[AT[Symbol], Model[Symbol, String]]]
+          implicitly[Tell[AT[String], Model[Symbol, Symbol, String]]]
+          implicitly[Interpretation[AT[Symbol], AT[String], Model[Symbol, Symbol, String]]]
+          implicitly[Tell[AT[Symbol], Model[Symbol, Symbol, String]]]
         }
 
         val m1 = m0 tell AT('a, 10) tell AT('b, 21) tell AT('b, 13)
@@ -99,6 +99,14 @@ object TellTestSuite extends TestSuite {
         assert(m1.index.at(aI) contains 10)
         assert(m1.index.at(bI) contains 21)
         assert(m1.index.at(bI) contains 13)
+      }
+
+      'strand - {
+
+        val m1 = m0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.+) tell Strand('t, Orientation.-)
+
+        'strand_r - assert(m1.str.strand.contains('r))
+        'strand_r_pos - assert(m1.str.strand('r) == Orientation.+)
       }
     }
 

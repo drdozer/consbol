@@ -2,9 +2,11 @@ package uk.co.turingatemyhamster.consbol
 
 
 sealed trait Orientation
-object + extends Orientation
-object - extends Orientation
 
+object Orientation {
+  object + extends Orientation
+  object - extends Orientation
+}
 
 
 case class RangeAs[R, V](range: R, lower: V, upper: V)

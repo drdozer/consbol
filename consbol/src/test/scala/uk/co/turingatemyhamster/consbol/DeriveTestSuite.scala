@@ -11,16 +11,16 @@ object DeriveTestSuite extends TestSuite {
     import Know._
     import Derive._
 
-    val m0 = Model.empty[Symbol, String]
+    val m0 = Model.empty[Symbol, Symbol, String]
 
     'derive_relative - {
       'lt - {
 
         'implicits - {
           implicitly[Interpretation[Symbol, String, InterpModel[Symbol, String]]]
-          implicitly[Interpretation[LT[Symbol], LT[String], Model[Symbol, String]]]
-          implicitly[Derive[LT[String], Model[Symbol, String]]]
-          implicitly[Derive[LT[Symbol], Model[Symbol, String]]]
+          implicitly[Interpretation[LT[Symbol], LT[String], Model[Symbol, Symbol, String]]]
+          implicitly[Derive[LT[String], Model[Symbol, Symbol, String]]]
+          implicitly[Derive[LT[Symbol], Model[Symbol, Symbol, String]]]
         }
 
         'derive_told - {
@@ -184,8 +184,8 @@ object DeriveTestSuite extends TestSuite {
       'lt - {
 
         'implicits - {
-          implicitly[Derive[AT[String], Model[Symbol, String]]]
-          implicitly[Derive[AT[Symbol], Model[Symbol, String]]]
+          implicitly[Derive[AT[String], Model[Symbol, Symbol, String]]]
+          implicitly[Derive[AT[Symbol], Model[Symbol, Symbol, String]]]
         }
 
         'derive_told {

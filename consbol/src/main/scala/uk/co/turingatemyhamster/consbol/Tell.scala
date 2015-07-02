@@ -30,20 +30,20 @@ object Tell extends TellLowPriorityImplicits with TellLowLowPriorityImplicits {
       m.copy(not_eq = m.not_eq + (a.lhs -> a.rhs))
   }
 
-  implicit def tell_eq[V, I]
+  implicit def tell_eq[R, V, I]
   (implicit vi: InterpretationSingleton[V, I], unify: UnifyI[I])
-  : Tell[EQ[V], Model[V, I]] = new Tell[EQ[V], Model[V, I]] {
-    override def apply(a: EQ[V], m: Model[V, I]): Model[V, I] =
+  : Tell[EQ[V], Model[R, V, I]] = new Tell[EQ[V], Model[R, V, I]] {
+    override def apply(a: EQ[V], m: Model[R, V, I]): Model[R, V, I] =
       m merge (a.lhs, a.rhs)
   }
 
-  implicit def tell_eq_inv[V, I]
+  implicit def tell_eq_inv[R, V, I]
   (implicit
    vi: InterpretationSingleton[V, I], unify: UnifyI[I],
-   in: Interpretation[EQ[V], EQ[I], Model[V, I]])
-  : Tell[EQ[I], Model[V, I]] = new Tell[EQ[I], Model[V, I]] {
-    override def apply(a: EQ[I], m: Model[V, I]): Model[V, I] =
-      tell_eq[V, I].apply(in.unapply(a, m).get, m)
+   in: Interpretation[EQ[V], EQ[I], Model[R, V, I]])
+  : Tell[EQ[I], Model[R, V, I]] = new Tell[EQ[I], Model[R, V, I]] {
+    override def apply(a: EQ[I], m: Model[R, V, I]): Model[R, V, I] =
+      tell_eq[R, V, I].apply(in.unapply(a, m).get, m)
   }
 
   implicit def tell_at[I]: Tell[AT[I], IndexModel[I]] = new Tell[AT[I], IndexModel[I]] {
@@ -56,15 +56,15 @@ object Tell extends TellLowPriorityImplicits with TellLowLowPriorityImplicits {
 trait TellLowPriorityImplicits {
   import Tell.TellOps
 
-  implicit def tell_usingOrdModel[A[_], V, I]
-  (implicit t: Tell[A[I], OrdModel[I]]): Tell[A[I], Model[V, I]] = new Tell[A[I], Model[V, I]] {
-    override def apply(a: A[I], m: Model[V, I]): Model[V, I] =
+  implicit def tell_usingOrdModel[A[_], R, V, I]
+  (implicit t: Tell[A[I], OrdModel[I]]): Tell[A[I], Model[R, V, I]] = new Tell[A[I], Model[R, V, I]] {
+    override def apply(a: A[I], m: Model[R, V, I]): Model[R, V, I] =
       m.copy(ord = m.ord tell a)
   }
 
-  implicit def tell_usingIndexModel[A[_], V, I]
-  (implicit t: Tell[A[I], IndexModel[I]]): Tell[A[I], Model[V, I]] = new Tell[A[I], Model[V, I]] {
-    override def apply(a: A[I], m: Model[V, I]): Model[V, I] =
+  implicit def tell_usingIndexModel[A[_], R, V, I]
+  (implicit t: Tell[A[I], IndexModel[I]]): Tell[A[I], Model[R, V, I]] = new Tell[A[I], Model[R, V, I]] {
+    override def apply(a: A[I], m: Model[R, V, I]): Model[R, V, I] =
       m.copy(index = m.index tell a)
   }
 
@@ -73,10 +73,10 @@ trait TellLowPriorityImplicits {
 trait TellLowLowPriorityImplicits {
   import Tell.TellOps
 
-  implicit def tell_viModel[A[_], V, I]
-  (implicit avI: Interpretation[A[V], A[I], Model[V, I]], t: Tell[A[I], Model[V, I]])
-  : Tell[A[V], Model[V, I]] = new Tell[A[V], Model[V, I]] {
-    override def apply(a: A[V], m0: Model[V, I]): Model[V, I] = {
+  implicit def tell_viModel[A[_], R, V, I]
+  (implicit avI: Interpretation[A[V], A[I], Model[R, V, I]], t: Tell[A[I], Model[R, V, I]])
+  : Tell[A[V], Model[R, V, I]] = new Tell[A[V], Model[R, V, I]] {
+    override def apply(a: A[V], m0: Model[R, V, I]): Model[R, V, I] = {
       val (a1, m1) = m0 interpretation a
       m1 tell a1
     }

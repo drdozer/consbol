@@ -12,13 +12,13 @@ object KnowTestSuite extends TestSuite {
     import Know._
 
     'tell - {
-      val m0 = Model.empty[Symbol, String]
+      val m0 = Model.empty[Symbol, Symbol, String]
 
       'lt - {
         'implicits - {
           implicitly[Know[LT, String, OrdModel[String]]]
-          implicitly[Know[LT, String, Model[Symbol, String]]]
-          implicitly[Know[LT, Symbol, Model[Symbol, String]]]
+          implicitly[Know[LT, String, Model[Symbol, Symbol, String]]]
+          implicitly[Know[LT, Symbol, Model[Symbol, Symbol, String]]]
         }
 
         val m1 = m0 tell LT('a, 'b)
@@ -32,8 +32,8 @@ object KnowTestSuite extends TestSuite {
       'lt_eq - {
         'implicits - {
           implicitly[Know[LT_EQ, String, OrdModel[String]]]
-          implicitly[Know[LT_EQ, String, Model[Symbol, String]]]
-          implicitly[Know[LT_EQ, Symbol, Model[Symbol, String]]]
+          implicitly[Know[LT_EQ, String, Model[Symbol, Symbol, String]]]
+          implicitly[Know[LT_EQ, Symbol, Model[Symbol, Symbol, String]]]
         }
 
         val m1 = m0 tell LT_EQ('a, 'b)
@@ -47,8 +47,8 @@ object KnowTestSuite extends TestSuite {
       'not_eq - {
         'implicits - {
           implicitly[Know[NOT_EQ, String, OrdModel[String]]]
-          implicitly[Know[NOT_EQ, String, Model[Symbol, String]]]
-          implicitly[Know[NOT_EQ, Symbol, Model[Symbol, String]]]
+          implicitly[Know[NOT_EQ, String, Model[Symbol, Symbol, String]]]
+          implicitly[Know[NOT_EQ, Symbol, Model[Symbol, Symbol, String]]]
         }
 
         val m1 = m0 tell NOT_EQ('a, 'b)
@@ -62,9 +62,9 @@ object KnowTestSuite extends TestSuite {
       'eq - {
         'implicits - {
           implicitly[Know[EQ, String, InterpModel[Symbol, String]]]
-          implicitly[Interpretation[EQ[Symbol], EQ[String], Model[Symbol, String]]]
-          implicitly[Know[EQ, String, Model[Symbol, String]]]
-          implicitly[Know[EQ, Symbol, Model[Symbol, String]]]
+          implicitly[Interpretation[EQ[Symbol], EQ[String], Model[Symbol, Symbol, String]]]
+          implicitly[Know[EQ, String, Model[Symbol, Symbol, String]]]
+          implicitly[Know[EQ, Symbol, Model[Symbol, Symbol, String]]]
         }
 
         val m1 = m0 tell EQ('a, 'b)
@@ -79,10 +79,9 @@ object KnowTestSuite extends TestSuite {
 
         'implicits - {
           implicitly[Know[AT, String, IndexModel[String]]]
-          implicitly[Know[AT, String, Model[Symbol, String]]]
-          implicitly[Interpretation[AT[Symbol], AT[String], Model[Symbol, String]]]
-          Know.know_usingInterpretation[AT, Symbol, String]
-          implicitly[Know[AT, Symbol, Model[Symbol, String]]]
+          implicitly[Know[AT, String, Model[Symbol, Symbol, String]]]
+          implicitly[Interpretation[AT[Symbol], AT[String], Model[Symbol, Symbol, String]]]
+          implicitly[Know[AT, Symbol, Model[Symbol, Symbol, String]]]
         }
 
         val m1 = m0 tell AT('a, 11)
