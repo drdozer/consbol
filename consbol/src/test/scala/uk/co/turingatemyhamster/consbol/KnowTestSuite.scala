@@ -124,6 +124,21 @@ object KnowTestSuite extends TestSuite {
         'got_result - assert(!k.isEmpty.value)
         'got_right_result - assert(k.head.value.result == SameStrandAs('r, 's))
       }
+
+      'different_strand_to - {
+
+        'implicits - {
+          implicitly[Know[DifferentStrandTo, Symbol, StrandModel[Symbol]]]
+          implicitly[Know[DifferentStrandTo, Symbol, Model[Symbol, Symbol, String]]]
+        }
+
+        val m1 = m0 tell DifferentStrandTo('r, 's)
+        val k = m1 know DifferentStrandTo('r, 's)
+
+        'got_result - assert(!k.isEmpty.value)
+        'got_right_result - assert(k.head.value.result == DifferentStrandTo('r, 's))
+
+      }
     }
   }
 

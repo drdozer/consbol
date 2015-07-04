@@ -80,6 +80,10 @@ trait TellStrandModel {
       m.copy(same_strand_as = m.same_strand_as + (a.lhs -> a.rhs))
   }
 
+  implicit def tell_different_strand_to[R]: Tell[DifferentStrandTo[R], StrandModel[R]] = new Tell[DifferentStrandTo[R], StrandModel[R]] {
+    override def apply(a: DifferentStrandTo[R], m: StrandModel[R]): StrandModel[R] =
+      m.copy(different_strand_to = m.different_strand_to + (a.lhs -> a.rhs))
+  }
 }
 
 trait TellLowPriorityImplicits {

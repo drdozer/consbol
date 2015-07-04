@@ -4,20 +4,29 @@ package uk.co.turingatemyhamster.consbol
 sealed trait Orientation
 
 object Orientation {
-  object + extends Orientation
-  object - extends Orientation
+  object + extends Orientation {
+    override def toString = "+"
+  }
+  object - extends Orientation {
+    override def toString = "-"
+  }
 }
 
 
 case class RangeAs[R, V](range: R, lower: V, upper: V)
 
 
-case class Strand[R](range: R, orient: Orientation)
+case class Strand[R](range: R, orient: Orientation) {
+  override def toString = s"$orient$range"
+}
 
-case class SameStrandAs[R](lhs: R, rhs: R)
+case class SameStrandAs[R](lhs: R, rhs: R) {
+  override def toString = s"$lhs±$rhs"
+}
 
-case class DifferentStrandTo[R](lhs: R, rhs: R)
-
+case class DifferentStrandTo[R](lhs: R, rhs: R) {
+  override def toString = s"$lhs∓t$rhs"
+}
 
 case class ShorterThan[R](lhs: R, rhs: R)
 

@@ -139,3 +139,26 @@ object UnifyI {
     override def apply(a: String, b: String): String = a + ":" + b
   }
 }
+
+
+trait Ranges[R, M] {
+  def apply(m: M): TrueStream[R]
+}
+
+object Ranges {
+
+  implicit class RangesOps[R, M](val _m: M) {
+    def allRanges(implicit r: Ranges[R, M]): TrueStream[R] =
+      r(_m)
+  }
+
+  implicit def modelRanges[R, V, I]: Ranges[R, Model[R, V, I]] = new Ranges[R, Model[R, V, I]] {
+    override def apply(m: Model[R, V, I]): TrueStream[R] =
+      m.str.allRanges
+  }
+
+  implicit def StrandModelRanges[R]: Ranges[R, StrandModel[R]] = new Ranges[R, StrandModel[R]] {
+    override def apply(m: StrandModel[R]): TrueStream[R] =
+      TrueStream(Set() ++ m.same_strand_as.map(_._1) ++ m.same_strand_as.map(_._2) ++ m.strand.keys)
+  }
+}

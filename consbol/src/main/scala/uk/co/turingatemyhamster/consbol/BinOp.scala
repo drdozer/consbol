@@ -29,6 +29,9 @@ object BinOp {
   implicit def binop_notShorterThan[T] = BinOp[NotShorterThan, T](NotShorterThan.apply, NotShorterThan.unapply)
   implicit def binop_longerThan[T] = BinOp[LongerThan, T](LongerThan.apply, LongerThan.unapply)
 
+  implicit def binop_sameStrandAs[T] = BinOp[SameStrandAs, T](SameStrandAs.apply, SameStrandAs.unapply)
+  implicit def binop_differentStrandTo[T] = BinOp[DifferentStrandTo, T](DifferentStrandTo.apply, DifferentStrandTo.unapply)
+
   implicit def binop_equals[T] = BinOp[Equals, T](Equals.apply, Equals.unapply)
   implicit def binop_contains[T] = BinOp[Contains, T](Contains.apply, Contains.unapply)
   implicit def binop_within[T] = BinOp[Within, T](Within.apply, Within.unapply)

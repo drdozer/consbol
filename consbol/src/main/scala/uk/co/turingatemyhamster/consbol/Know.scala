@@ -143,7 +143,8 @@ trait KnowStrandModel {
       }
   }
 
-  implicit def know_same_strand_as[R]: Know[SameStrandAs, R, StrandModel[R]] = new Know[SameStrandAs, R, StrandModel[R]] {
+  implicit def know_same_strand_as[R]
+  : Know[SameStrandAs, R, StrandModel[R]] = new Know[SameStrandAs, R, StrandModel[R]] {
     override def byLHS(lhs: R, m0: StrandModel[R]): TrueStream[Proof[SameStrandAs[R]]] =
       TrueStream(m0.same_strand_as.filter(_._1 == lhs) map { case (l, r) => Fact(SameStrandAs(l, r)) })
 
@@ -154,6 +155,20 @@ trait KnowStrandModel {
         else
           Done
       }
+  }
+
+  implicit def know_different_strand_to[R]
+  : Know[DifferentStrandTo, R, StrandModel[R]] = new Know[DifferentStrandTo, R, StrandModel[R]] {
+    override def apply(a: DifferentStrandTo[R], m0: StrandModel[R]): TrueStream[Proof[DifferentStrandTo[R]]] =
+      StreamT apply Need {
+        if(m0.different_strand_to contains (a.lhs -> a.rhs))
+          singleton(Fact(a))
+        else
+          Done
+      }
+
+    override def byLHS(lhs: R, m0: StrandModel[R]): TrueStream[Proof[DifferentStrandTo[R]]] =
+      TrueStream(m0.different_strand_to.filter(_._1 == lhs) map { case (l, r) => Fact(DifferentStrandTo(l, r)) })
   }
 }
 

@@ -55,4 +55,5 @@ case class OrdModel[I](lt: Set[(I, I)] = Set.empty[(I, I)],
                        not_eq: Set[(I, I)] = Set.empty[(I, I)])
 
 case class StrandModel[R](strand: Map[R, Set[Orientation]] = Map.empty[R, Set[Orientation]],
-                          same_strand_as: Set[(R, R)] = Set.empty[(R, R)])
+                          same_strand_as: Set[(R, R)] = Set.empty[(R, R)],
+                          different_strand_to: Set[(R, R)] = Set.empty[(R, R)])

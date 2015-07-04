@@ -102,7 +102,7 @@ object TellTestSuite extends TestSuite {
       }
 
       'strand - {
-        'orientation {
+        'orientation - {
 
           'implicits - {
             implicitly[Tell[Strand[Symbol], StrandModel[Symbol]]]
@@ -121,13 +121,25 @@ object TellTestSuite extends TestSuite {
 
         'same_strand_as {
           'implicits - {
-            implicitly[Tell[Strand[Symbol], StrandModel[Symbol]]]
-            implicitly[Tell[Strand[Symbol], Model[Symbol, Symbol, String]]]
+            implicitly[Tell[SameStrandAs[Symbol], StrandModel[Symbol]]]
+            implicitly[Tell[SameStrandAs[Symbol], Model[Symbol, Symbol, String]]]
           }
 
           val m1 = m0 tell SameStrandAs('r, 's)
 
           assert(m1.str.same_strand_as contains ('r -> 's))
+        }
+
+        'different_strand_to - {
+
+          'implicits - {
+            implicitly[Tell[DifferentStrandTo[Symbol], StrandModel[Symbol]]]
+            implicitly[Tell[DifferentStrandTo[Symbol], Model[Symbol, Symbol, String]]]
+          }
+
+          val m1 = m0 tell DifferentStrandTo('r, 's)
+
+          assert(m1.str.different_strand_to contains ('r -> 's))
         }
       }
     }
