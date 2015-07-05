@@ -176,6 +176,16 @@ trait KnowLowPriorityImplicits {
   
   import Know.KnowOps
 
+  implicit def know_dsFromModel[A[_], T, M]
+  (implicit k: Know[A, T, M])
+  : Know[A, T, DerivationState[M]] = new Know[A, T, DerivationState[M]] {
+    override def byLHS(lhs: T, ds0: DerivationState[M]): TrueStream[Proof[A[T]]] =
+      ds0.m0.knowLHS[A, T](lhs)
+
+    override def apply(a: A[T], ds0: DerivationState[M]): TrueStream[Proof[A[T]]] =
+      ds0.m0 know a
+  }
+
   implicit def know_modelFromInterp[A[_], R, V, I]
   (implicit k: Know[A, I, InterpModel[V, I]])
   : Know[A, I, Model[R, V, I]] = new Know[A, I, Model[R, V, I]] {
@@ -240,20 +250,4 @@ trait KnowLowLowPriorityImplicits {
     }
   }
 
-//  implicit def know_usingAtInterpretation[V, I]
-//  (implicit
-//   inV: Interpretation[V, I, Model[V, I]],
-//   inA: Interpretation[AT[V], AT[I], Model[V, I]],
-//   k: Know[AT, I, Model[V, I]])
-//   : Know[AT, Symbol, Model[Symbol, String]] = new Know[AT, Symbol, Model[Symbol, String]] {
-//    override def apply(a: AT[Symbol], m0: Model[Symbol, String]): TrueStream[Proof[AT[Symbol]]] = {
-//      val (pointI, m1) = m0 interpretation a.point
-//      m1 know AT(pointI, a.loc) map (p => Interpreted(a, p))
-//    }
-//
-//    override def byLHS(lhs: Symbol, m0: Model[Symbol, String]): TrueStream[Proof[AT[Symbol]]] = {
-//      val (pointI, m1) = m0 interpretation lhs
-//      m1 knowLHS pointI map (p => Interpreted(AT(lhs, p)))
-//    }
-//  }
 }

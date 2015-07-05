@@ -11,7 +11,7 @@ object DeriveTestSuite extends TestSuite {
     import Know._
     import Derive._
 
-    val m0 = Model.empty[Symbol, Symbol, String]
+    val ds0 = DerivationState(m0 = Model.empty[Symbol, Symbol, String])
 
     'derive_relative - {
       'lt - {
@@ -25,8 +25,8 @@ object DeriveTestSuite extends TestSuite {
 
         'derive_told - {
 
-          val m1 = m0 tell LT('a, 'b)
-          val d = m1 derive0 LT('a, 'b)
+          val ds1 = ds0 tell LT('a, 'b)
+          val d = ds1 derive LT('a, 'b)
 
           'got_result - assert(!d.isEmpty.value)
           'result_is_correct - assert(d.head.value._1.result == LT('a, 'b))
@@ -35,17 +35,17 @@ object DeriveTestSuite extends TestSuite {
 
         'derive_lt_lt - {
 
-          val m1 = m0 tell LT('a, 'b) tell LT('b, 'c)
+          val ds1 = ds0 tell LT('a, 'b) tell LT('b, 'c)
 
-          val k_before = m1 know LT('a, 'c)
+          val k_before = ds1 know LT('a, 'c)
 
-          val d_ab = m1 derive0 LT('a, 'b) map (_._1)
-          val d_bc = m1 derive0 LT('b, 'c) map (_._1)
-          val d_ac = m1 derive0 LT('a, 'c) map (_._1)
+          val d_ab = ds1 derive LT('a, 'b) map (_._1)
+          val d_bc = ds1 derive LT('b, 'c) map (_._1)
+          val d_ac = ds1 derive LT('a, 'c) map (_._1)
 
-          val d_ba = m1 derive0 LT('b, 'a) map (_._1)
-          val d_cb = m1 derive0 LT('c, 'b) map (_._1)
-          val d_ca = m1 derive0 LT('c, 'a) map (_._1)
+          val d_ba = ds1 derive LT('b, 'a) map (_._1)
+          val d_cb = ds1 derive LT('c, 'b) map (_._1)
+          val d_ca = ds1 derive LT('c, 'a) map (_._1)
 
           'ac_unknown_before - assert(k_before.isEmpty.value)
 
@@ -59,24 +59,24 @@ object DeriveTestSuite extends TestSuite {
           'cb - assert(d_cb.isEmpty.value)
           'ca - assert(d_ca.isEmpty.value)
 
-          val k_after = (m1 derive0 LT('a, 'c)).head.value._2 know LT('a, 'c)
+          val k_after = (ds1 derive LT('a, 'c)).head.value._2 know LT('a, 'c)
 
           'ac_known_after - assert(!k_after.isEmpty.value)
         }
 
         'derive_lt_lt_eq - {
 
-          val m1 = m0 tell LT('a, 'b) tell LT_EQ('b, 'c)
+          val ds1 = ds0 tell LT('a, 'b) tell LT_EQ('b, 'c)
 
-          val k_before = m1 know LT('a, 'c)
+          val k_before = ds1 know LT('a, 'c)
 
-          val d_ab = m1 derive0 LT('a, 'b) map (_._1)
-          val d_bc = m1 derive0 LT_EQ('b, 'c) map (_._1)
-          val d_ac = m1 derive0 LT('a, 'c) map (_._1)
+          val d_ab = ds1 derive LT('a, 'b) map (_._1)
+          val d_bc = ds1 derive LT_EQ('b, 'c) map (_._1)
+          val d_ac = ds1 derive LT('a, 'c) map (_._1)
 
-          val d_ba = m1 derive0 LT('b, 'a) map (_._1)
-          val d_cb = m1 derive0 LT('c, 'b) map (_._1)
-          val d_ca = m1 derive0 LT('c, 'a) map (_._1)
+          val d_ba = ds1 derive LT('b, 'a) map (_._1)
+          val d_cb = ds1 derive LT('c, 'b) map (_._1)
+          val d_ca = ds1 derive LT('c, 'a) map (_._1)
 
           'ac_unknown_before - assert(k_before.isEmpty.value)
 
@@ -90,24 +90,24 @@ object DeriveTestSuite extends TestSuite {
           'cb - assert(d_cb.isEmpty.value)
           'ca - assert(d_ca.isEmpty.value)
 
-          val k_after = (m1 derive0 LT('a, 'c)).head.value._2 know LT('a, 'c)
+          val k_after = (ds1 derive LT('a, 'c)).head.value._2 know LT('a, 'c)
 
           'ac_known_after - assert(!k_after.isEmpty.value)
         }
 
         'derive_lt_eq_lt - {
 
-          val m1 = m0 tell LT_EQ('a, 'b) tell LT('b, 'c)
+          val ds1 = ds0 tell LT_EQ('a, 'b) tell LT('b, 'c)
 
-          val k_before = m1 know LT('a, 'c)
+          val k_before = ds1 know LT('a, 'c)
 
-          val d_ab = m1 derive0 LT_EQ('a, 'b) map (_._1)
-          val d_bc = m1 derive0 LT('b, 'c) map (_._1)
-          val d_ac = m1 derive0 LT('a, 'c) map (_._1)
+          val d_ab = ds1 derive LT_EQ('a, 'b) map (_._1)
+          val d_bc = ds1 derive LT('b, 'c) map (_._1)
+          val d_ac = ds1 derive LT('a, 'c) map (_._1)
 
-          val d_ba = m1 derive0 LT('b, 'a) map (_._1)
-          val d_cb = m1 derive0 LT('c, 'b) map (_._1)
-          val d_ca = m1 derive0 LT('c, 'a) map (_._1)
+          val d_ba = ds1 derive LT('b, 'a) map (_._1)
+          val d_cb = ds1 derive LT('c, 'b) map (_._1)
+          val d_ca = ds1 derive LT('c, 'a) map (_._1)
 
           'ac_unknown_before - assert(k_before.isEmpty.value)
 
@@ -121,7 +121,7 @@ object DeriveTestSuite extends TestSuite {
           'cb - assert(d_cb.isEmpty.value)
           'ca - assert(d_ca.isEmpty.value)
 
-          val k_after = (m1 derive0 LT('a, 'c)).head.value._2 know LT('a, 'c)
+          val k_after = (ds1 derive LT('a, 'c)).head.value._2 know LT('a, 'c)
 
           'ac_known_after - assert(!k_after.isEmpty.value)
         }
@@ -132,8 +132,8 @@ object DeriveTestSuite extends TestSuite {
 
         'derive_told - {
 
-          val m1 = m0 tell LT_EQ('a, 'b)
-          val d = m1 derive0 LT_EQ('a, 'b)
+          val ds1 = ds0 tell LT_EQ('a, 'b)
+          val d = ds1 derive LT_EQ('a, 'b)
 
           'got_result - assert(!d.isEmpty.value)
           'result_is_correct - assert(d.head.value._1.result == LT_EQ('a, 'b))
@@ -142,23 +142,23 @@ object DeriveTestSuite extends TestSuite {
 
         'derive_lt_eq_lt_eq - {
 
-          val m1 = m0 tell LT_EQ('a, 'b) tell LT_EQ('b, 'c)
+          val ds1 = ds0 tell LT_EQ('a, 'b) tell LT_EQ('b, 'c)
 
-          val k_ab = m1 know LT_EQ('a, 'b)
-          val k_bc = m1 know LT_EQ('b, 'c)
+          val k_ab = ds1 know LT_EQ('a, 'b)
+          val k_bc = ds1 know LT_EQ('b, 'c)
 
           'kab - assert(k_ab.head.value.result == LT_EQ('a, 'b))
           'kbc - assert(k_bc.head.value.result == LT_EQ('b, 'c))
 
-          val k_before = m1 know LT_EQ('a, 'c)
+          val k_before = ds1 know LT_EQ('a, 'c)
 
-          val d_ab = m1 derive0 LT_EQ('a, 'b) map (_._1)
-          val d_bc = m1 derive0 LT_EQ('b, 'c) map (_._1)
-          val d_ac = m1 derive0 LT_EQ('a, 'c) map (_._1)
+          val d_ab = ds1 derive LT_EQ('a, 'b) map (_._1)
+          val d_bc = ds1 derive LT_EQ('b, 'c) map (_._1)
+          val d_ac = ds1 derive LT_EQ('a, 'c) map (_._1)
 
-          val d_ba = m1 derive0 LT_EQ('b, 'a) map (_._1)
-          val d_cb = m1 derive0 LT_EQ('c, 'b) map (_._1)
-          val d_ca = m1 derive0 LT_EQ('c, 'a) map (_._1)
+          val d_ba = ds1 derive LT_EQ('b, 'a) map (_._1)
+          val d_cb = ds1 derive LT_EQ('c, 'b) map (_._1)
+          val d_ca = ds1 derive LT_EQ('c, 'a) map (_._1)
 
           'ac_unknown_before - assert(k_before.isEmpty.value)
 
@@ -173,7 +173,7 @@ object DeriveTestSuite extends TestSuite {
           'cb - assert(d_cb.isEmpty.value)
           'ca - assert(d_ca.isEmpty.value)
 
-          val k_after = (m1 derive0 LT_EQ('a, 'c)).head.value._2 know LT_EQ('a, 'c)
+          val k_after = (ds1 derive LT_EQ('a, 'c)).head.value._2 know LT_EQ('a, 'c)
 
           'ac_known_after - assert(!k_after.isEmpty.value)
         }
@@ -189,10 +189,10 @@ object DeriveTestSuite extends TestSuite {
         }
 
         'derive_told {
-          val m1 = m0 tell AT('a, 10) tell AT('b, 20)
+          val ds1 = ds0 tell AT('a, 10) tell AT('b, 20)
 
-          val d_a = m1 derive0 AT('a, 10)
-          val d_b = m1 derive0 AT('b, 20)
+          val d_a = ds1 derive AT('a, 10)
+          val d_b = ds1 derive AT('b, 20)
 
           'got_result_a - assert(!d_a.isEmpty.value)
           'result_is_correct_a - assert(d_a.head.value._1.result == AT('a, 10))
@@ -205,9 +205,9 @@ object DeriveTestSuite extends TestSuite {
 
         'derive_lt - {
 
-          val m1 = m0 tell AT('a, 10) tell AT('b, 20)
+          val ds1 = ds0 tell AT('a, 10) tell AT('b, 20)
 
-          val d = m1 derive0 LT('a, 'b)
+          val d = ds1 derive LT('a, 'b)
 
           'got_result - assert(!d.isEmpty.value)
           'result_is_correct - assert(d.head.value._1.result == LT('a, 'b))
@@ -218,9 +218,9 @@ object DeriveTestSuite extends TestSuite {
 
         'when_lt - {
 
-          val m1 = m0 tell AT('a, 10) tell AT('b, 20)
+          val ds1 = ds0 tell AT('a, 10) tell AT('b, 20)
 
-          val d = m1 derive0 LT_EQ('a, 'b)
+          val d = ds1 derive LT_EQ('a, 'b)
 
           'got_result - assert(!d.isEmpty.value)
           'result_is_correct - assert(d.head.value._1.result == LT_EQ('a, 'b))
@@ -232,9 +232,9 @@ object DeriveTestSuite extends TestSuite {
 
         'when_eq - {
 
-          val m1 = m0 tell AT('a, 10) tell AT('b, 10)
+          val ds1 = ds0 tell AT('a, 10) tell AT('b, 10)
 
-          val d = m1 derive0 LT_EQ('a, 'b)
+          val d = ds1 derive LT_EQ('a, 'b)
 
           'got_result - assert(!d.isEmpty.value)
           'result_is_correct - assert(d.head.value._1.result == LT_EQ('a, 'b))
@@ -248,9 +248,9 @@ object DeriveTestSuite extends TestSuite {
 
       'eq - {
 
-        val m1 = m0 tell AT('a, 10) tell AT('b, 10)
+        val ds1 = ds0 tell AT('a, 10) tell AT('b, 10)
 
-        val d = m1 derive0 EQ('a, 'b)
+        val d = ds1 derive EQ('a, 'b)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == EQ('a, 'b))
@@ -262,9 +262,9 @@ object DeriveTestSuite extends TestSuite {
       }
 
       'not_eq - {
-        val m1 = m0 tell AT('a, 10) tell AT('b, 20)
+        val ds1 = ds0 tell AT('a, 10) tell AT('b, 20)
 
-        val d = m1 derive0 NOT_EQ('a, 'b)
+        val d = ds1 derive NOT_EQ('a, 'b)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == NOT_EQ('a, 'b))
@@ -280,11 +280,11 @@ object DeriveTestSuite extends TestSuite {
         implicitly[Derive[Strand[Symbol], Model[Symbol, Symbol, String]]]
       }
 
-      val m1 = m0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-) tell Strand('t, Orientation.+)
+      val ds1 = ds0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-) tell Strand('t, Orientation.+)
 
-      val dr = m1 derive0 Strand('r, Orientation.+)
-      val ds = m1 derive0 Strand('s, Orientation.-)
-      val dt = m1 derive0 Strand('t, Orientation.+)
+      val dr = ds1 derive Strand('r, Orientation.+)
+      val ds = ds1 derive Strand('s, Orientation.-)
+      val dt = ds1 derive Strand('t, Orientation.+)
 
       'got_result_r - assert(!dr.isEmpty.value)
       'got_corret_result_r - assert(dr.head.value._1.result == Strand('r, Orientation.+))
@@ -303,8 +303,8 @@ object DeriveTestSuite extends TestSuite {
       }
 
       'from_tell - {
-        val m1 = m0 tell SameStrandAs('r, 's)
-        val d = m1 derive0 SameStrandAs('r, 's)
+        val ds1 = ds0 tell SameStrandAs('r, 's)
+        val d = ds1 derive SameStrandAs('r, 's)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == SameStrandAs('r, 's))
@@ -312,8 +312,8 @@ object DeriveTestSuite extends TestSuite {
       }
 
       'from_strand - {
-        val m1 = m0 tell Strand('r, Orientation.-) tell Strand('s, Orientation.-)
-        val d = m1 derive0 SameStrandAs('r, 's)
+        val ds1 = ds0 tell Strand('r, Orientation.-) tell Strand('s, Orientation.-)
+        val d = ds1 derive SameStrandAs('r, 's)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == SameStrandAs('r, 's))
@@ -321,16 +321,16 @@ object DeriveTestSuite extends TestSuite {
       }
 
       'same_strand_implies_strand_lr - {
-        val m1 = m0 tell Strand('s, Orientation.+) tell SameStrandAs('r, 's)
-        val d = m1 derive0 Strand('r, Orientation.+)
+        val ds1 = ds0 tell Strand('s, Orientation.+) tell SameStrandAs('r, 's)
+        val d = ds1 derive Strand('r, Orientation.+)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == Strand('r, Orientation.+))
       }
 
       'same_strand_implies_strand_rl - {
-        val m1 = m0 tell Strand('s, Orientation.+) tell SameStrandAs('s, 'r)
-        val d = m1 derive0 Strand('r, Orientation.+)
+        val ds1 = ds0 tell Strand('s, Orientation.+) tell SameStrandAs('s, 'r)
+        val d = ds1 derive Strand('r, Orientation.+)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == Strand('r, Orientation.+))
@@ -343,40 +343,40 @@ object DeriveTestSuite extends TestSuite {
       }
 
       'from_tell - {
-        val m1 = m0 tell DifferentStrandTo('r, 's)
-        val d = m1 derive0 DifferentStrandTo('r, 's)
+        val ds1 = ds0 tell DifferentStrandTo('r, 's)
+        val d = ds1 derive DifferentStrandTo('r, 's)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == DifferentStrandTo('r, 's))
       }
 
       'from_strand_explicit - {
-        val m1 = m0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-)
-        val d = DeriveStrandModel.`r∓s -| +r, -s` apply (DifferentStrandTo('r, 's), Set(), m1)
+        val ds1 = ds0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-)
+        val d = DeriveStrandModel.`r∓s -| +r, -s` apply (DifferentStrandTo('r, 's), ds1)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == DifferentStrandTo('r, 's))
       }
 
       'from_strand - {
-        val m1 = m0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-)
-        val d = m1 derive0 DifferentStrandTo('r, 's)
+        val ds1 = ds0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-)
+        val d = ds1 derive DifferentStrandTo('r, 's)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == DifferentStrandTo('r, 's))
       }
 
       'different_strand_implies_strand_lr - {
-        val m1 = m0 tell Strand('s, Orientation.+) tell DifferentStrandTo('r, 's)
-        val d = m1 derive0 Strand('r, Orientation.-)
+        val ds1 = ds0 tell Strand('s, Orientation.+) tell DifferentStrandTo('r, 's)
+        val d = ds1 derive Strand('r, Orientation.-)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == Strand('r, Orientation.-))
       }
 
       'different_strand_implies_strand_rl - {
-        val m1 = m0 tell Strand('s, Orientation.+) tell SameStrandAs('s, 'r)
-        val d = m1 derive0 Strand('r, Orientation.-)
+        val ds1 = ds0 tell Strand('s, Orientation.+) tell SameStrandAs('s, 'r)
+        val d = ds1 derive Strand('r, Orientation.-)
 
         'got_result - assert(!d.isEmpty.value)
         'result_is_correct - assert(d.head.value._1.result == Strand('r, Orientation.-))

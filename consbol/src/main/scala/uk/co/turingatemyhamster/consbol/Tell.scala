@@ -121,4 +121,12 @@ trait TellLowLowPriorityImplicits {
     }
   }
 
+  implicit def tell_ds[A, M]
+  (implicit t: Tell[A, M])
+  : Tell[A, DerivationState[M]] = new Tell[A, DerivationState[M]] {
+    override def apply(a: A, ds0: DerivationState[M]): DerivationState[M] = {
+      ds0 withModel (ds0.m0 tell a)
+    }
+  }
+
 }

@@ -2,30 +2,33 @@ package uk.co.turingatemyhamster.consbol
 
 import Know.KnowOps
 import Tell._
+import uk.co.turingatemyhamster.consbol.Derive.DerivationResults
 
 import scala.annotation.tailrec
 import scala.language.higherKinds
 import scalaz.Scalaz._
 import scalaz.{Need, Name, StreamT}
 
+case class DerivationState[M](cuts: Set[Any] = Set.empty,
+                              refuted: Map[Set[Any], Set[Any]] = Map.empty,
+                              m0: M)
+{
+  def withModel(m1: M): DerivationState[M] = copy(m0 = m1)
+  def withCuts(cs: Set[Any]): DerivationState[M] = copy(cuts = cs)
+  def withCut(c: Any): DerivationState[M] = copy(cuts = cuts + c)
+}
 
 trait DeriveLHS[A[_], T, M] {
-  def apply(lhs: T, goals: Set[Any], m0: M): TrueStream[(Proof[A[T]], M)]
+  def apply(lhs: T, ds: DerivationState[M]): DerivationResults[A[T], M]
 }
 
 object DeriveLHS {
   import Ranges.RangesOps
   import Derive.DeriveOps
 
-  trait Using[A[T], T, M] {
-    def using(goals: Set[Any]): TrueStream[(Proof[A[T]], M)]
-  }
-
-  implicit class DeriveLHSOps[M](val _m: M) {
-    def deriveLHS[A[_], T](lhs: T)(implicit d: DeriveLHS[A, T, M]) = new Using[A, T, M] {
-      override def using(goals: Set[Any]): TrueStream[(Proof[A[T]], M)] =
-        d(lhs, goals, _m)
-    }
+  implicit class DeriveLHSOps[M](_ds0: DerivationState[M]) {
+    def deriveLHS[A[_], T](lhs: T)(implicit dlhs: DeriveLHS[A, T, M]) =
+      dlhs(lhs, _ds0)
   }
 
   implicit def lhsFromRanges[A[_], R, V, I]
@@ -34,11 +37,12 @@ object DeriveLHS {
    d: Derive[A[R], Model[R, V, I]])
   : DeriveLHS[A, R, Model[R, V, I]] = new DeriveLHS[A, R, Model[R, V, I]] {
 
-    override def apply(lhs: R, goals: Set[Any], m0: Model[R, V, I]): TrueStream[(Proof[A[R]], Model[R, V, I])] = {
+    override def apply(lhs: R, ds0: DerivationState[Model[R, V, I]])
+    : DerivationResults[A[R], Model[R, V, I]] = {
       for {
-        rhs <- m0.allRanges
-        (d1, m1) <- m0 derive ops.recompose(lhs, rhs) using goals
-      } yield (d1, m1)
+        rhs <- ds0.allRanges
+        dr1 <- ds0 derive ops.recompose(lhs, rhs)
+      } yield dr1
     }
   }
 
@@ -46,68 +50,59 @@ object DeriveLHS {
 
 
 trait Derive[A, M] {
-  def apply(a: A, goals: Set[Any], m0: M): TrueStream[(Proof[A], M)]
+  def apply(a: A, ds: DerivationState[M]): DerivationResults[A, M]
 }
 
 object Derive extends DeriveLowPriorityImpicits {
 
-  def apply[A, M](d: (A, Set[Any], M) => TrueStream[(Proof[A], M)]): Derive[A, M] = new Derive[A, M] {
-    override def apply(a: A, goals: Set[Any], m0: M): TrueStream[(Proof[A], M)] =
-      d(a, goals, m0)
+  type DerivationResult[A, M] = (Proof[A], DerivationState[M])
+  type DerivationResults[A, M] = TrueStream[DerivationResult[A, M]]
+
+  def apply[A, M](d: (A, DerivationState[M]) => DerivationResults[A, M]): Derive[A, M] = new Derive[A, M] {
+    override def apply(a: A, ds0: DerivationState[M]): DerivationResults[A, M] =
+      d(a, ds0)
   }
 
   implicit class TrueStreamOps[A, R, V, I](val _s: Derive[A, Model[R, V, I]]) {
-    def ||(_t: Derive[A, Model[R, V, I]])
-    : Derive[A, Model[R, V, I]] = new Derive[A, Model[R, V, I]] {
-      override def apply(a: A, goals: Set[Any], m0: Model[R, V, I]): TrueStream[(Proof[A], Model[R, V, I])] = {
-        val k1 = _s(a, goals, m0)
+    def ||(_t: Derive[A, Model[R, V, I]]) = Derive[A, Model[R, V, I]] {
+      (a: A, ds0: DerivationState[Model[R, V, I]]) => {
+        val k1 = _s(a, ds0)
         k1 mappend {
-          val m1 = lastModel(k1, m0)
-          _t(a, goals, m1)
+          val m1 = lastModel(k1, ds0.m0)
+          _t(a, ds0 withModel m1)
         }
       }
     }
 
-    def log(msg: String): Derive[A, Model[R, V, I]] = new Derive[A, Model[R, V, I]] {
-      override def apply(a: A, goals: Set[Any], m0: Model[R, V, I]): TrueStream[(Proof[A], Model[R, V, I])] = {
-        println(s"${" " * goals.size}$msg [$a] ${goals contains a} $goals")
-        _s(a, goals, m0)
+    def log(msg: String): Derive[A, Model[R, V, I]] = Derive[A, Model[R, V, I]] {
+      (a: A,  ds0: DerivationState[Model[R, V, I]]) => {
+        println(s"${" " * ds0.cuts.size}$msg [$a] ${ds0.cuts contains a} ${ds0.cuts}")
+        _s(a, ds0)
       }
     }
   }
 
-  def guard[A, R, V, I](d: Derive[A, Model[R, V, I]]): Derive[A, Model[R, V, I]] = new Derive[A, Model[R, V, I]] {
-    override def apply(a: A, goals: Set[Any], m0: Model[R, V, I]): TrueStream[(Proof[A], Model[R, V, I])] =
-      if(goals contains a)
+  def guard[A, R, V, I](d: Derive[A, Model[R, V, I]]) = Derive[A, Model[R, V, I]] {
+    (a: A, ds0: DerivationState[Model[R, V, I]]) =>
+      if(ds0.cuts contains a)
         StreamT.empty
       else
-        d(a, goals + a, m0)
+        d(a, ds0 withCut a)
   }
 
   def known[A[_], T, R, V, I]
-  (implicit k: Know[A, T, Model[R, V, I]])
-  : Derive[A[T], Model[R, V, I]] = new Derive[A[T], Model[R, V, I]] {
-    override def apply(a: A[T], goals: Set[Any], m0: Model[R, V, I]): TrueStream[(Proof[A[T]], Model[R, V, I])] =
-      m0 know a map (_ -> m0)
+  (implicit k: Know[A, T, Model[R, V, I]]) = Derive[A[T], Model[R, V, I]] {
+    (a: A[T], ds0: DerivationState[Model[R, V, I]]) =>
+      ds0.m0 know a map (_ -> ds0)
   }
 
-  implicit class DeriveOps[M](val _m: M) {
-
-    trait Using[A, M] {
-      def using(goals: Set[Any]): TrueStream[(Proof[A], M)]
-    }
-
-    def derive[A](a: A)(implicit d: Derive[A, M]) = new Using[A, M] {
-      def using(goals: Set[Any]) =
-        d(a, goals, _m)
-    }
-
-    def derive0[A](a: A)(implicit d: Derive[A, M]): TrueStream[(Proof[A], M)] =
-      d(a, Set(), _m)
+  implicit class DeriveOps[M](val _ds0: DerivationState[M]) {
+    def derive[A](a: A)(implicit d: Derive[A, M]) =
+      d(a, _ds0)
   }
 
-  def lastModel[A, M](str: TrueStream[(A, M)], m0: M): M =
-    (str.foldLeft(m0) { case (_, (_, m1)) => m1 }).value
+  def lastModel[A, M](str: DerivationResults[A, M], m0: M): M =
+    (str.foldLeft(m0) { case (_, (_, ds)) => ds.m0 }).value
 
   implicit def derive_lt[R, V, I]
   (implicit k: Know[LT, I, Model[R, V, I]])
@@ -146,14 +141,11 @@ trait DeriveLowPriorityImpicits {
   (implicit
    in: Interpretation[A[V], A[I], Model[R, V, I]],
    d: Derive[A[I], Model[R, V, I]])
-  : Derive[A[V], Model[R, V, I]] = new Derive[A[V], Model[R, V, I]] {
-
-    override def apply(a: A[V], goals: Set[Any], m0: Model[R, V, I]): TrueStream[(Proof[A[V]], Model[R, V, I])] = {
-      val (a1, m1) = m0 interpretation a
-      m1 derive a1 using goals map { case (p, m) => Interpreted(a, p) -> m }
+  : Derive[A[V], Model[R, V, I]] = Derive[A[V], Model[R, V, I]] {
+     (a: A[V], ds0: DerivationState[Model[R, V, I]]) => {
+      val (a1, ds1) = ds0 interpretation a
+      ds1 derive a1 map { case (p, ds) => Interpreted(a, p) -> ds }
     }
-
   }
-
 
 }
