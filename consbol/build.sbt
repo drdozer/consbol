@@ -14,6 +14,8 @@ libraryDependencies += "com.github.mpilquist" %% "simulacrum" % "0.3.0"
 
 libraryDependencies += "com.lihaoyi" %% "utest" % "0.3.1"
 
+libraryDependencies += "com.lihaoyi" %% "fastparse" % "0.1.7"
+
 libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.3"
 
 testFrameworks += new TestFramework("utest.runner.Framework")

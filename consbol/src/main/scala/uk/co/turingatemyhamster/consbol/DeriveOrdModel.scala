@@ -27,7 +27,7 @@ object DeriveOrdModel {
         x = px.result.rhs
         (p1, ds1) <- ds0 derive LT_EQ(x, a.rhs)
       } yield {
-        Rule2("lt_<_<=", a, px, p1) -> (ds1 tell a)
+        Rule2(a, px, p1) -> (ds1 tell a)
       }
   }
 
@@ -38,7 +38,7 @@ object DeriveOrdModel {
         x = px.result.rhs
         (p1, ds1) <- ds0 derive LT(x, a.rhs)
       } yield {
-        Rule2("lt_<=_<", a, px, p1) -> (ds1 tell a)
+        Rule2(a, px, p1) -> (ds1 tell a)
       }
   }
 
@@ -49,7 +49,7 @@ object DeriveOrdModel {
         x = px.result.rhs
         (p1, ds1) <- ds0 derive LT(x, a.rhs)
       } yield {
-        Rule2("lt_<_<", a, px, p1) -> (ds1 tell a)
+        Rule2(a, px, p1) -> (ds1 tell a)
       }
     }
 
@@ -68,14 +68,14 @@ object DeriveOrdModel {
         px <- ds0.knowLHS[LT_EQ, I](a.lhs)
         x = px.result.rhs
         (p1, ds1) <- ds0 derive LT_EQ(x, a.rhs)
-      } yield Rule2("lt_eq_<=_<=", a, px, p1) -> (ds1 tell a)
+      } yield Rule2(a, px, p1) -> (ds1 tell a)
   }
 
   def `a <= b -| a < b`[R, V, I] = Derive[LT_EQ[I], Model[R, V, I]] {
    (a, ds0) =>
       for {
         (p, ds1) <- ds0 derive LT(a.lhs, a.rhs)
-      } yield Rule1("lt_eq_<", a, p) -> (ds1 tell a)
+      } yield Rule1(a, p) -> (ds1 tell a)
   }
 
 
@@ -92,7 +92,7 @@ object DeriveOrdModel {
       for {
         (p1, ds1) <- ds0 derive LT_EQ(a.lhs, a.rhs)
         (p2, ds2) <- ds1 derive LT_EQ(a.rhs, a.lhs)
-      } yield Rule2("eq_<=_>=", a, p1, p2) -> (ds2 tell a)
+      } yield Rule2(a, p1, p2) -> (ds2 tell a)
   }
 
 
@@ -108,14 +108,14 @@ object DeriveOrdModel {
    (a, ds0) =>
       for {
         (p1, ds1) <- ds0 derive LT(a.lhs, a.rhs)
-      } yield Rule1("not_eq_<_>", a, p1) -> (ds1 tell a)
+      } yield Rule1(a, p1) -> (ds1 tell a)
   }
 
   def `a != b -| b < a`[R, V, I] = Derive[NOT_EQ[I], Model[R, V, I]] {
    (a, ds0) =>
       for {
         (p1, ds1) <- ds0 derive LT(a.rhs, a.lhs)
-      } yield Rule1("not_eq_<_>", a, p1) -> (ds1 tell a)
+      } yield Rule1(a, p1) -> (ds1 tell a)
   }
 
 }

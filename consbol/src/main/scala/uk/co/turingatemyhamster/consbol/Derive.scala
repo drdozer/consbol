@@ -2,6 +2,7 @@ package uk.co.turingatemyhamster.consbol
 
 import Know.KnowOps
 import Tell._
+import fastparse.FuncName
 import uk.co.turingatemyhamster.consbol.Derive.DerivationResults
 
 import scala.annotation.tailrec
@@ -74,9 +75,9 @@ object Derive extends DeriveLowPriorityImpicits {
       }
     }
 
-    def log(msg: String): Derive[A, Model[R, V, I]] = Derive[A, Model[R, V, I]] {
+    def log(implicit fn: FuncName): Derive[A, Model[R, V, I]] = Derive[A, Model[R, V, I]] {
       (a: A,  ds0: DerivationState[Model[R, V, I]]) => {
-        println(s"${" " * ds0.cuts.size}$msg [$a] ${ds0.cuts contains a} ${ds0.cuts}")
+        println(s"${" " * ds0.cuts.size}${fn.name} [$a] ${ds0.cuts contains a} ${ds0.cuts} ${ds0.refuted}")
         _s(a, ds0)
       }
     }

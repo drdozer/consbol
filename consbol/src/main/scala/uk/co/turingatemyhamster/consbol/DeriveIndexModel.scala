@@ -21,7 +21,7 @@ object DeriveIndexModel {
         atRHS <- ds0.knowLHS[AT, I](a.rhs)
         if atLHS.result.loc < atRHS.result.loc
       } yield
-      Rule2("lt_at", a, atLHS, atRHS) -> (ds0 tell a)
+      Rule2(a, atLHS, atRHS) -> (ds0 tell a)
   }
 
   def `a <= b -| a @ i, b @ j, i <= j`[R, V, I] = Derive[LT_EQ[I], Model[R, V, I]] {
@@ -31,7 +31,7 @@ object DeriveIndexModel {
         atRHS <- ds0.knowLHS[AT, I](a.rhs)
         if atLHS.result.loc <= atRHS.result.loc
       } yield
-      Rule2("lt_eq_at", a, atLHS, atRHS) -> (ds0 tell a)
+      Rule2(a, atLHS, atRHS) -> (ds0 tell a)
   }
 
   def `a = b -| a @ i, b @ j, i = j`[R, V, I]
@@ -43,7 +43,7 @@ object DeriveIndexModel {
         atRHS <- ds0.knowLHS[AT, I](a.rhs)
         if atLHS.result.loc == atRHS.result.loc
       } yield
-      Rule2("lt_eq_at", a, atLHS, atRHS) -> (ds0 tell a)
+      Rule2(a, atLHS, atRHS) -> (ds0 tell a)
   }
 
   def `a != b -| a @ i, b @ j, i != j`[R, V, I] = Derive[NOT_EQ[I], Model[R, V, I]] {
@@ -53,7 +53,7 @@ object DeriveIndexModel {
         atRHS <- ds0.knowLHS[AT, I](a.rhs)
         if atLHS.result.loc != atRHS.result.loc
       } yield
-      Rule2("lt_eq_at", a, atLHS, atRHS) -> (ds0 tell a)
+      Rule2(a, atLHS, atRHS) -> (ds0 tell a)
   }
 
 }
