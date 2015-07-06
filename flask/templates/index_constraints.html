@@ -11,6 +11,9 @@
    <img class="alter1" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/equals.svg') }}" />
 This constrains that <span class="component">A </span> and <span class="component">B</span> contain the same start and end positions.
 </p>
+<p>
+
+</p>
 <hr/>
 <h2>
     <span class="component">A </span><span class="constraint">contains</span> <span class="component">B</span>
@@ -18,6 +21,9 @@ This constrains that <span class="component">A </span> and <span class="componen
 <p>
     <img class="alter2" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/contains.svg') }}" />
     The 'contains' constraint aswell as the 'within' constraint are the supersets of the 'equals', 'ends_with' and 'starts_with' constraints. This constrains that <span class="component">B</span> must have a start point >= to the start point of <span class="component">A </span> and have an end point <= to the end point of <span class="component">A </span>.
+</p>
+<p >
+    Example: <span class="index_example"><span class="component"> SpaR</span> <span class="constraint">contains</span> <span class="component">RBS_Spak</span> </span>
 </p>
 <hr/>
 <h2>
@@ -27,6 +33,9 @@ This constrains that <span class="component">A </span> and <span class="componen
     <img class="alter2" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/within.svg') }}" />
     This constrains that <span class="component">A</span> must have a start point >= to the start point of <span class="component">B</span> and an end point <= to the end point of <span class="component">B</span>.
 </p>
+<p >
+    Example: <span class="index_example"><span class="component"> SpaR</span> <span class="constraint">within</span> <span class="component">Spark_Operon</span> </span>
+</p>
 <hr/>
 <h2>
    <span class="component"> A</span> <span class="constraint">ends_with</span> <span class="component">B</span>
@@ -34,6 +43,9 @@ This constrains that <span class="component">A </span> and <span class="componen
 <p>
     <img  class="alter2" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/ends_with.svg') }}" />
 This constrains that the end points of  <span class="component"> A</span>  and <span class="component">B</span> are equal and that the start point of <span class="component">B</span> > than the start point of <span class="component">A</span>.
+</p>
+<p>
+    Example: <span class="index_example"><span class="component"> SpaK</span> <span class="constraint">ends_with</span> <span class="component">double_stop_codon</span> </span>
 </p>
 <hr/>
 <h2>
@@ -43,6 +55,9 @@ This constrains that the end points of  <span class="component"> A</span>  and <
 <img  class="alter2"src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/starts_with.svg') }}" />
 This constrains that the start point of <span class="component"> A</span> and <span class="component">B</span> are equal and that the end point of <span class="component">B</span> is < than the end point of <span class="component"> A</span>.
 </p>
+<p>
+    Example: <span class="index_example"><span class="component"> SpaK</span> <span class="constraint">starts_with</span> <span class="component">ATG_startcodon</span> </span>
+</p>
 <hr/>
 <h2>
     <span class="component">A</span> <span class="constraint">touches</span> <span class="component">B</span>
@@ -51,6 +66,9 @@ This constrains that the start point of <span class="component"> A</span> and <s
 <img class="alter3" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/touches.svg') }}" />
 This constrains that the end point of <span class="component">A</span> is touching the start point of <span class="component">B</span>. The start point of <span class="component">B</span> is equal to the end point of <span class="component">A</span> + 1
 </p>
+<p>
+    Example: <span class="index_example"><span class="component"> BBa_k174008</span> <span class="constraint">touches</span> <span class="component">GFP</span> </span>,<span class="index_example"><span class="component"> GFP</span> <span class="constraint">touches</span> <span class="component">SMTA</span> </span>. A protein fusion example.
+</p>
 <hr/>
 <h2>
     <span class="component">A </span><span class="constraint">gap_then</span> <span class="component">B</span>
@@ -58,6 +76,9 @@ This constrains that the end point of <span class="component">A</span> is touchi
 <p>
 <img class="alter" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/gap_then.svg') }}" />
 This constrains that the both the start and end point of <span class="component">A </span> are < than then start and end point of <span class="component">B</span>. The start point of <span class="component">B</span> is equal to the end point of <span class="component">A </span> + i where i = 2,3,4,...,n.
+</p>
+<p>
+    Example: <span class="index_example"><span class="component"> ProD</span> <span class="constraint">gap_then</span> <span class="component">bba_B0032</span> </span>. Davis et al.
 </p>
 <hr/>
 <h2>
@@ -73,6 +94,9 @@ This constrains that the both the start and end point of <span class="component"
 <p>
 <img  class="alter4" src="{{ url_for('static', filename='images/constraints_diagrams/index_sequence_constraints/overlaps.svg') }}" />
 This constrains that the end of <span class="component">A </span> overlaps with the start of <span class="component">B</span>. The start point of <span class="component">A </span> is < than the start point of <span class="component">B</span>. The end point of <span class="component">A </span> is >= to the start point of <span class="component">B</span> and is < than the end point of <span class="component">B</span>.
+</p>
+<p>
+    Example: <span class="index_example"><span class="component"> RockR_promotor</span> <span class="constraint">overlaps</span> <span class="component">RockR binding site</span> </span>
 </p>
 
 {% endblock %}

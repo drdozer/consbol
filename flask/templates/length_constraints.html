@@ -8,18 +8,32 @@
 <h2>
 <span class="component">A</span> <span class="constraint">same_length_as </span> <span class="component">B</span>
 </h2>
-<p> This constrains that the length of <span class="component">A</span> is equal to the length of <span class="component">B</span>
+<p>
+    <img src="{{ url_for('static', filename='images/constraints_diagrams/length_constraints/same_length.svg') }}"/>
+    <br/><br/>
+    This constrains that the length of <span class="component">A</span> is equal to the length of <span class="component">B</span>
 </p>
 <hr/>
 <h2>
 <span class="component">A</span> <span class="constraint">shorter_than </span> <span class="component">B</span>
 </h2>
-<p>length <span class="component">A</span> < length <span class="component">B</span></p>
+<p>
+    <img src="{{ url_for('static', filename='images/constraints_diagrams/length_constraints/shorter_than.svg') }}" />
+    <br/>
+    <br/>
+    length <span class="component">A</span> < length <span class="component">B</span>
+
+</p>
 <hr/>
 <h2>
 <span class="component">A</span> <span class="constraint">not_longer_than</span> <span class="component">B</span>
 </h2>
-<p>length <span class="component">A</span> <= length <span class="component">B</span>
+<p>
+       <img src="{{ url_for('static', filename='images/constraints_diagrams/length_constraints/same_length.svg') }}"/> or
+ <img src="{{ url_for('static', filename='images/constraints_diagrams/length_constraints/shorter_than.svg') }}" />
+
+<br/><br/>
+    length <span class="component">A</span> <= length <span class="component">B</span>
 </p>
 
 {% endblock %}

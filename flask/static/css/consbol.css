@@ -125,11 +125,17 @@ img.alter {
 }
 
 #footer img {
-    width: 10%;
-    height: 10%
+    /*width: 10%;*/
+    /*height: 10%*/
 }
-
 .component {
     color: rgb(55, 69, 72);
     font-weight: bold;
+}
+
+.index_example{
+    padding :5px;
+    border:solid;
+    border-color: darkred;
+
 }
