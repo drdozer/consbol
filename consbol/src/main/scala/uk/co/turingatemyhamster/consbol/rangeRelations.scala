@@ -1,13 +1,17 @@
 package uk.co.turingatemyhamster.consbol
 
 
-sealed trait Orientation
+sealed trait Orientation {
+  def inverse: Orientation
+}
 
 object Orientation {
   object + extends Orientation {
+    override def inverse = Orientation.-
     override def toString = "+"
   }
   object - extends Orientation {
+    override def inverse = Orientation.+
     override def toString = "-"
   }
 }

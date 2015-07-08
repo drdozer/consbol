@@ -1,12 +1,6 @@
 package uk.co.turingatemyhamster.consbol
 
-import scalaz.Scalaz._
-import scalaz.{Need, Name, StreamT}
-
-import Tell._
-import Know._
 import Derive._
-import DeriveLHS._
 
 object DeriveOrdModel {
 
@@ -20,39 +14,29 @@ object DeriveOrdModel {
       `a < c -| a <= b, b < c`
   }
 
-  def `a <_c -| a < b, b <= c`[R, V, I] = Derive[LT[I], Model[R, V, I]] {
-   (a, ds0) =>
-      for {
-        px <- ds0.knowLHS[LT, I](a.lhs)
-        x = px.result.rhs
-        (p1, ds1) <- ds0 derive LT_EQ(x, a.rhs)
-      } yield {
-        Rule2(a, px, p1) -> (ds1 tell a)
-      }
-  }
-
-  def `a < c -| a <= b, b < c`[R, V, I] = Derive[LT[I], Model[R, V, I]] {
-   (a, ds0) =>
-      for {
-        px <- ds0.knowLHS[LT_EQ, I](a.lhs)
-        x = px.result.rhs
-        (p1, ds1) <- ds0 derive LT(x, a.rhs)
-      } yield {
-        Rule2(a, px, p1) -> (ds1 tell a)
-      }
-  }
-
-  def `a < c -| a < b, b < c`[R, V, I] = Derive[LT[I], Model[R, V, I]] {
-   (a, ds0) =>
-      for {
-        px <- ds0.knowLHS[LT, I](a.lhs)
-        x = px.result.rhs
-        (p1, ds1) <- ds0 derive LT(x, a.rhs)
-      } yield {
-        Rule2(a, px, p1) -> (ds1 tell a)
+  def `a <_c -| a < b, b <= c`[R, V, I] = Derive[LT[I], Model[R, V, I]] { a =>
+    a.lhs.knowLHS[LT] { lhsProof =>
+      LT_EQ(lhsProof.goal.rhs, a.rhs) derive { rhsProof =>
+        Proof(a, lhsProof, rhsProof)
       }
     }
+  }
 
+  def `a < c -| a <= b, b < c`[R, V, I] = Derive[LT[I], Model[R, V, I]] { a =>
+    a.lhs.knowLHS[LT_EQ] { lhsProof =>
+      LT(lhsProof.goal.rhs, a.rhs) derive { rhsProof =>
+        Proof(a, lhsProof, rhsProof)
+      }
+    }
+  }
+
+  def `a < c -| a < b, b < c`[R, V, I] = Derive[LT[I], Model[R, V, I]] { a =>
+    a.lhs.knowLHS[LT] { lhsProof =>
+      LT(lhsProof.goal.rhs, a.rhs) derive { rhsProof =>
+        Proof(a, lhsProof, rhsProof)
+      }
+    }
+  }
 
   def `a <= b -| ?`[R, V, I]
   (implicit kLtEq: Know[LT_EQ, I, Model[R, V, I]]) = guard {
@@ -62,20 +46,18 @@ object DeriveOrdModel {
       `a <= c -| a <= b, b <= c`
   }
 
-  def `a <= c -| a <= b, b <= c`[R, V, I] = Derive[LT_EQ[I], Model[R, V, I]] {
-   (a, ds0) =>
-      for {
-        px <- ds0.knowLHS[LT_EQ, I](a.lhs)
-        x = px.result.rhs
-        (p1, ds1) <- ds0 derive LT_EQ(x, a.rhs)
-      } yield Rule2(a, px, p1) -> (ds1 tell a)
+  def `a <= c -| a <= b, b <= c`[R, V, I] = Derive[LT_EQ[I], Model[R, V, I]] { a =>
+    a.lhs.knowLHS[LT_EQ] { lhsProof =>
+      LT_EQ(lhsProof.goal.rhs, a.rhs) derive { rhsProof =>
+        Proof(a, lhsProof, rhsProof)
+      }
+    }
   }
 
-  def `a <= b -| a < b`[R, V, I] = Derive[LT_EQ[I], Model[R, V, I]] {
-   (a, ds0) =>
-      for {
-        (p, ds1) <- ds0 derive LT(a.lhs, a.rhs)
-      } yield Rule1(a, p) -> (ds1 tell a)
+  def `a <= b -| a < b`[R, V, I] = Derive[LT_EQ[I], Model[R, V, I]] { a =>
+    LT(a.lhs, a.rhs) derive { ltProof =>
+      Proof(a, ltProof)
+    }
   }
 
 
@@ -87,12 +69,12 @@ object DeriveOrdModel {
 
 
   def `a = b -| a <=b, b <= a`[R, V, I]
-  (implicit t: Tell[EQ[I], Model[R, V, I]]) = Derive[EQ[I], Model[R, V, I]] {
-   (a, ds0) =>
-      for {
-        (p1, ds1) <- ds0 derive LT_EQ(a.lhs, a.rhs)
-        (p2, ds2) <- ds1 derive LT_EQ(a.rhs, a.lhs)
-      } yield Rule2(a, p1, p2) -> (ds2 tell a)
+  (implicit t: Tell[EQ[I], Model[R, V, I]]) = Derive[EQ[I], Model[R, V, I]] { a =>
+    LT_EQ(a.lhs, a.rhs) derive { lhsProof =>
+      LT_EQ(a.rhs, a.lhs) derive { rhsProof =>
+        Proof(a, lhsProof, rhsProof)
+      }
+    }
   }
 
 
@@ -104,18 +86,16 @@ object DeriveOrdModel {
       `a != b -| b < a`
   }
 
-  def `a != b -| a < b`[R, V, I] = Derive[NOT_EQ[I], Model[R, V, I]] {
-   (a, ds0) =>
-      for {
-        (p1, ds1) <- ds0 derive LT(a.lhs, a.rhs)
-      } yield Rule1(a, p1) -> (ds1 tell a)
+  def `a != b -| a < b`[R, V, I] = Derive[NOT_EQ[I], Model[R, V, I]] { a =>
+    LT(a.lhs, a.rhs) derive { ltProof =>
+      Proof(a, ltProof)
+    }
   }
 
-  def `a != b -| b < a`[R, V, I] = Derive[NOT_EQ[I], Model[R, V, I]] {
-   (a, ds0) =>
-      for {
-        (p1, ds1) <- ds0 derive LT(a.rhs, a.lhs)
-      } yield Rule1(a, p1) -> (ds1 tell a)
+  def `a != b -| b < a`[R, V, I] = Derive[NOT_EQ[I], Model[R, V, I]] { a =>
+    LT(a.rhs, a.lhs) derive { ltProof =>
+      Proof(a, ltProof)
+    }
   }
 
 }

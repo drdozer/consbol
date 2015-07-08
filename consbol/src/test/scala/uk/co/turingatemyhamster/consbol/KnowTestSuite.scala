@@ -25,7 +25,7 @@ object KnowTestSuite extends TestSuite {
         val k = m1 know LT('a, 'b)
 
         'got_result - assert(!k.isEmpty.value)
-        'got_right_result - assert(k.head.value.result == LT('a, 'b))
+        'got_right_result - assert(k.head.value.goal == LT('a, 'b))
         'got_only_one_result - assert(k.tail.isEmpty.value)
       }
 
@@ -40,7 +40,7 @@ object KnowTestSuite extends TestSuite {
         val k = m1 know LT_EQ('a, 'b)
 
         'got_result - assert(!k.isEmpty.value)
-        'got_right_result - assert(k.head.value.result == LT_EQ('a, 'b))
+        'got_right_result - assert(k.head.value.goal == LT_EQ('a, 'b))
         'got_only_one_result - assert(k.tail.isEmpty.value)
       }
 
@@ -55,7 +55,7 @@ object KnowTestSuite extends TestSuite {
         val k = m1 know NOT_EQ('a, 'b)
 
         'got_result - assert(!k.isEmpty.value)
-        'got_right_result - assert(k.head.value.result == NOT_EQ('a, 'b))
+        'got_right_result - assert(k.head.value.goal == NOT_EQ('a, 'b))
         'got_only_one_result - assert(k.tail.isEmpty.value)
       }
 
@@ -71,7 +71,7 @@ object KnowTestSuite extends TestSuite {
         val k = m1 know EQ('a, 'b)
 
         'got_result - assert(!k.isEmpty.value)
-        'got_right_result - assert(k.head.value.result == EQ('a, 'b))
+        'got_right_result - assert(k.head.value.goal == EQ('a, 'b))
         'got_only_one_result - assert(k.tail.isEmpty.value)
       }
 
@@ -90,7 +90,7 @@ object KnowTestSuite extends TestSuite {
         val ka_12 = m1 know AT('a, 12)
 
         'got_result_11 - assert(!ka_11.isEmpty.value)
-        'got_right_result_11 - assert(ka_11.head.value.result == AT('a, 11))
+        'got_right_result_11 - assert(ka_11.head.value.goal == AT('a, 11))
         'got_only_one_result_11 - assert(ka_11.tail.isEmpty.value)
 
         'got_no_result_12 - assert(ka_12.isEmpty.value)
@@ -108,7 +108,7 @@ object KnowTestSuite extends TestSuite {
         val k = m1 know Strand('r, Orientation.+)
 
         'got_result - assert(!k.isEmpty.value)
-        'got_right_result - assert(k.head.value.result == Strand('r, Orientation.+))
+        'got_right_result - assert(k.head.value.goal == Strand('r, Orientation.+))
       }
 
       'same_strand_as - {
@@ -122,7 +122,7 @@ object KnowTestSuite extends TestSuite {
         val k = m1 know SameStrandAs('r, 's)
 
         'got_result - assert(!k.isEmpty.value)
-        'got_right_result - assert(k.head.value.result == SameStrandAs('r, 's))
+        'got_right_result - assert(k.head.value.goal == SameStrandAs('r, 's))
       }
 
       'different_strand_to - {
@@ -136,7 +136,7 @@ object KnowTestSuite extends TestSuite {
         val k = m1 know DifferentStrandTo('r, 's)
 
         'got_result - assert(!k.isEmpty.value)
-        'got_right_result - assert(k.head.value.result == DifferentStrandTo('r, 's))
+        'got_right_result - assert(k.head.value.goal == DifferentStrandTo('r, 's))
 
       }
     }

@@ -4,6 +4,29 @@ import scala.language.higherKinds
 import scalaz.{Need, Name, StreamT}
 import scalaz.StreamT.{Done}
 
+trait KnowValue[A, V, M] {
+  def apply(v: V, m0: M): TrueStream[A]
+}
+
+object KnowValue extends KnowValueLowPriorityImplicits {
+
+  implicit def knowValue_strand[R]
+  : KnowValue[Strand[R], Orientation, StrandModel[R]] = new KnowValue[Strand[R], Orientation, StrandModel[R]] {
+    override def apply(v: Orientation, m0: StrandModel[R]): TrueStream[Strand[R]] =
+      TrueStream(m0.strand.filter(_._2 contains v) map (ro => Strand(ro._1, v)))
+  }
+
+}
+
+trait KnowValueLowPriorityImplicits {
+
+  implicit def knowValue_fromModel[A, L, R, V, I](implicit k: KnowValue[A, L, StrandModel[R]])
+  : KnowValue[A, L, Model[R, V, I]] = new KnowValue[A, L, Model[R, V, I]] {
+    override def apply(v: L, m0: Model[R, V, I]): TrueStream[A] =
+      k(v, m0.str)
+  }
+
+}
 
 trait Know[A[_], T, M] {
   def apply(a: A[T], m0: M): TrueStream[Proof[A[T]]]
@@ -241,12 +264,12 @@ trait KnowLowLowPriorityImplicits {
   : Know[A, V, Model[R, V, I]] = new Know[A, V, Model[R, V, I]] {
     override def apply(a: A[V], m0: Model[R, V, I]): TrueStream[Proof[A[V]]] = {
       val (a1, m1) = m0 interpretation a
-      m1 know a1 map (p => Interpreted(a, p))
+      m1 know a1 map (p => InterpretedProof(a, p))
     }
 
     override def byLHS(lhs: V, m0: Model[R, V, I]): TrueStream[Proof[A[V]]] = {
       val (lhs1, m1) = m0 interpretation lhs
-      m1 knowLHS lhs1 map (p => Interpreted(m1 coimage p.result get, p))
+      m1 knowLHS lhs1 map (p => InterpretedProof(m1 coimage p.goal get, p))
     }
   }
 
