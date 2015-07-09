@@ -72,12 +72,16 @@ object DerivationApp {
   @JSExport
   def render(to: html.Div): Unit = {
     val ds0 = DerivationState(m0 = Model.empty[Symbol, Symbol, String])
-    val ds1 = ds0 tell Strand('r, Orientation.-) tell Strand('s, Orientation.-)
+    val ds1 = ds0 tell
+      Strand('u, Orientation.+) tell
+      DifferentStrandTo('t, 'u) tell
+      SameStrandAs('t, 's) tell
+      SameStrandAs('s, 'r)
 
-    val ssa = SameStrandAs('r, 's)
-    val d = implicitly[Derive[SameStrandAs[Symbol], Model[Symbol, Symbol, String]]]
+    val a = Strand('r, Orientation.-)
+    val d = implicitly[Derive[Strand[Symbol], Model[Symbol, Symbol, String]]]
 
-    val res = d.apply(ssa, ds1)
+    val res = d.apply(a, ds1)
     val dl = Dynamic.literal
 
     val x = js.Array(res.map(r => unpack(r._1)).toStream.value :_*)

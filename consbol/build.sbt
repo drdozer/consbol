@@ -6,14 +6,24 @@ lazy val sharedSettings = Seq(
   organization := "uk.co.turingatemyhamster"
   )
 
+lazy val util = crossProject.settings(
+  name := "consbol-util",
+  libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
+  libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full)
+  ).settings(sharedSettings : _*)
+
+lazy val utilJS = util.js
+lazy val utilJVM = util.jvm
+
 lazy val core = crossProject.settings(
   name := "consbol-core",
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
   libraryDependencies += "com.github.mpilquist" %% "simulacrum" % "0.3.0",
   libraryDependencies += "com.lihaoyi" %%% "utest" % "0.3.1",
-  libraryDependencies += "com.lihaoyi" %%% "fastparse" % "0.1.7",
+  //libraryDependencies += "com.lihaoyi" %%% "fastparse" % "0.1.7",
   testFrameworks += new TestFramework("utest.runner.Framework")
-  ).settings(sharedSettings : _*)
+  ).settings(sharedSettings : _*).dependsOn(util)
 
 lazy val coreJS = core.js.settings(
   libraryDependencies += "com.github.japgolly.fork.scalaz" %%% "scalaz-core" % "7.1.3"

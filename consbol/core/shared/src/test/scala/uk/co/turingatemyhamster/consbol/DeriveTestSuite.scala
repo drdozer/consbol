@@ -316,14 +316,14 @@ object DeriveTestSuite extends TestSuite {
         implicitly[Derive[SameStrandAs[Symbol], Model[Symbol, Symbol, String]]]
       }
 
-//      'from_tell - {
-//        val ds1 = ds0 tell SameStrandAs('r, 's)
-//        val d = ds1 |- SameStrandAs('r, 's)
-//
-//        'got_goal - assert(!d.isEmpty.value)
-//        'goal_is_correct - assert(d.head.value.goal == SameStrandAs('r, 's))
-//
-//      }
+      'from_tell - {
+        val ds1 = ds0 tell SameStrandAs('r, 's)
+        val d = ds1 |- SameStrandAs('r, 's)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value.goal == SameStrandAs('r, 's))
+
+      }
 
       'from_strand - {
         val ds1 = ds0 tell Strand('r, Orientation.-) tell Strand('s, Orientation.-)
@@ -333,68 +333,72 @@ object DeriveTestSuite extends TestSuite {
         'goal_is_correct - assert(d.head.value.goal == SameStrandAs('r, 's))
 
       }
-//
-//      'same_strand_implies_strand_lr - {
-//        val ds1 = ds0 tell Strand('s, Orientation.+) tell SameStrandAs('r, 's)
-//        val d = ds1 |- Strand('r, Orientation.+)
-//
-//        'got_goal - assert(!d.isEmpty.value)
-//        'goal_is_correct - assert(d.head.value.goal == Strand('r, Orientation.+))
-//      }
-//
-//      'same_strand_implies_strand_rl - {
-//        val ds1 = ds0 tell Strand('s, Orientation.+) tell SameStrandAs('s, 'r)
-//        val d = ds1 |- Strand('r, Orientation.+)
-//
-//        'got_goal - assert(!d.isEmpty.value)
-//        'goal_is_correct - assert(d.head.value.goal == Strand('r, Orientation.+))
-//      }
+
+      'same_strand_implies_strand_lr - {
+        val ds1 = ds0 tell Strand('s, Orientation.+) tell SameStrandAs('r, 's)
+        val d = ds1 |- Strand('r, Orientation.+)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value.goal == Strand('r, Orientation.+))
+      }
+
+      'same_strand_implies_strand_rl - {
+        val ds1 = ds0 tell Strand('s, Orientation.+) tell SameStrandAs('s, 'r)
+        val d = ds1 |- Strand('r, Orientation.+)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value.goal == Strand('r, Orientation.+))
+      }
     }
-//
-//    'derive_different_strand_to - {
-//      'implicits {
-//        implicitly[Derive[DifferentStrandTo[Symbol], Model[Symbol, Symbol, String]]]
-//      }
-//
-//      'from_tell - {
-//        val ds1 = ds0 tell DifferentStrandTo('r, 's)
-//        val d = ds1 |- DifferentStrandTo('r, 's)
-//
-//        'got_goal - assert(!d.isEmpty.value)
-//        'goal_is_correct - assert(d.head.value.goal == DifferentStrandTo('r, 's))
-//      }
-//
-//      'from_strand_explicit - {
-//        val ds1 = ds0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-)
-//        val d = DeriveStrandModel.`r∓s -| +r, -s` apply (DifferentStrandTo('r, 's), ds1)
-//
-//        'got_goal - assert(!d.isEmpty.value)
-//        'goal_is_correct - assert(d.head.value._1.get.goal == DifferentStrandTo('r, 's))
-//      }
-//
-//      'from_strand - {
-//        val ds1 = ds0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-)
-//        val d = ds1 |- DifferentStrandTo('r, 's)
-//
-//        'got_goal - assert(!d.isEmpty.value)
-//        'goal_is_correct - assert(d.head.value.goal == DifferentStrandTo('r, 's))
-//      }
-//
-//      'different_strand_implies_strand_lr - {
-//        val ds1 = ds0 tell Strand('s, Orientation.+) tell DifferentStrandTo('r, 's)
-//        val d = ds1 |- Strand('r, Orientation.-)
-//
-//        'got_goal - assert(!d.isEmpty.value)
-//        'goal_is_correct - assert(d.head.value.goal == Strand('r, Orientation.-))
-//      }
-//
-//      'different_strand_implies_strand_rl - {
-//        val ds1 = ds0 tell Strand('s, Orientation.+) tell SameStrandAs('s, 'r)
-//        val d = ds1 |- Strand('r, Orientation.-)
-//
-//        'got_goal - assert(!d.isEmpty.value)
-//        'goal_is_correct - assert(d.head.value.goal == Strand('r, Orientation.-))
-//      }
-//    }
+
+    'derive_different_strand_to - {
+      'implicits {
+        implicitly[Derive[DifferentStrandTo[Symbol], Model[Symbol, Symbol, String]]]
+      }
+
+      'from_tell - {
+        val ds1 = ds0 tell DifferentStrandTo('r, 's)
+        val d = ds1 |- DifferentStrandTo('r, 's)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value.goal == DifferentStrandTo('r, 's))
+      }
+
+      'from_strand_explicit - {
+        val ds1 = ds0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-)
+        val d = DeriveStrandModel.`r∓s -| +r, -s` apply (DifferentStrandTo('r, 's), ds1)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value._1.get.goal == DifferentStrandTo('r, 's))
+      }
+
+      'from_strand - {
+        val ds1 = ds0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-)
+        val d = ds1 |- DifferentStrandTo('r, 's)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value.goal == DifferentStrandTo('r, 's))
+      }
+
+      'different_strand_implies_strand_lr - {
+        val ds1 = ds0 tell Strand('s, Orientation.+) tell DifferentStrandTo('r, 's)
+        val d = ds1 |- Strand('r, Orientation.-)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value.goal == Strand('r, Orientation.-))
+      }
+
+      'different_strand_implies_strand_rl - {
+        val ds1 = ds0 tell Strand('s, Orientation.+) tell SameStrandAs('s, 'r)
+        val d = ds1 |- Strand('r, Orientation.-)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value.goal == Strand('r, Orientation.-))
+      }
+    }
+
+    'derive_strand_chained - {
+
+    }
   }
 }

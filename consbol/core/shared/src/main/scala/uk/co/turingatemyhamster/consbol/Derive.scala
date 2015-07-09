@@ -1,6 +1,7 @@
 package uk.co.turingatemyhamster.consbol
 
-import fastparse.FuncName
+import uk.co.turingatemyhamster.consbol.util.Utils._
+import uk.co.turingatemyhamster.consbol.util.FuncName
 
 import scala.language.higherKinds
 import scalaz._
@@ -57,8 +58,8 @@ object Derive extends DeriveImplicits with DeriveLowPriorityImpicits {
       d(a)(ds0)
   }
 
-  implicit class TrueStreamOps[A, R, V, I](val _s: Derive[A, Model[R, V, I]]) {
-    def ||(_t: Derive[A, Model[R, V, I]]) = Derive[A, Model[R, V, I]] { a => ds0 =>
+  implicit class TrueStreamOps[A, M](val _s: Derive[A, M]) {
+    def ||(_t: Derive[A, M]) = Derive[A, M] { a => ds0 =>
         val k1 = _s(a, ds0)
         k1 mappend {
           val m1 = lastModel(k1, ds0.m0)
@@ -66,10 +67,21 @@ object Derive extends DeriveImplicits with DeriveLowPriorityImpicits {
         }
     }
 
-    def log(implicit fn: FuncName): Derive[A, Model[R, V, I]] = Derive[A, Model[R, V, I]] { a => ds0 =>
+    def log(implicit fn: FuncName): Derive[A, M] = Derive[A, M] { a => ds0 =>
         println(s"${" " * ds0.cuts.size}${fn.name} [$a] ${ds0.cuts contains a} ${ds0.cuts} ${ds0.refuted}")
         _s(a, ds0)
     }
+  }
+
+  implicit class TrueStreamOps0[O[_], T, M](val _s: Derive[O[T], M]) {
+    def swap(implicit b: BinOp[O, T]): Derive[O[T], M] = Derive[O[T], M] { a => ds0 =>
+        val (l, r) = b.decompose(a)
+        val i = b.recompose(r, l)
+        _s(i, ds0)
+    }
+
+    def sym(implicit b: BinOp[O, T]): Derive[O[T], M] =
+      _s || _s.swap
   }
 
   def guard[A, M](d: Derive[A, M]) = Derive[A, M] { a => ds0 =>

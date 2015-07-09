@@ -1,6 +1,8 @@
 package uk.co.turingatemyhamster.consbol
 
-import fastparse.FuncName
+
+import uk.co.turingatemyhamster.consbol.util.Utils._
+import uk.co.turingatemyhamster.consbol.util.FuncName
 import uk.co.turingatemyhamster.consbol.Derive.DProof
 
 import scala.language.higherKinds

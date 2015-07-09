@@ -2,6 +2,7 @@ package uk.co.turingatemyhamster.consbol
 
 
 import Derive._
+import uk.co.turingatemyhamster.consbol.util.Utils._
 
 object DeriveStrandModel {
 
@@ -31,10 +32,9 @@ object DeriveStrandModel {
 
   def `r±s -| ?`[R, V, I]
   : Derive[SameStrandAs[R], Model[R, V, I]] = guard {
-    known[SameStrandAs, R, Model[R, V, I]] ||
+    known[SameStrandAs, R, Model[R, V, I]].sym ||
       `r±s -| +r, +s` ||
-      `r±s -| -r, -s` ||
-      `r±s -| s±r` /* ||
+      `r±s -| -r, -s` /* ||
       `r±s -| r±t, t±s` ||
       `r±s -| r∓t, t∓s` */
   }
@@ -51,14 +51,6 @@ object DeriveStrandModel {
     Strand(a.lhs, Orientation.-) derive { lhsProof =>
       Strand(a.rhs, Orientation.-) derive { rhsProof =>
         Proof(a, lhsProof, rhsProof)
-      }
-    }
-  }
-
-  def `r±s -| s±r`[R, V, I] = Derive[SameStrandAs[R], Model[R, V, I]] { a =>
-    onlyIf(a.lhs != a.rhs) {
-      SameStrandAs(a.rhs, a.lhs) derive { proof =>
-        Proof(a, proof)
       }
     }
   }
@@ -82,20 +74,11 @@ object DeriveStrandModel {
 
   def `r∓s -| ?`[R, V, I]
   : Derive[DifferentStrandTo[R], Model[R, V, I]] = guard {
-    known[DifferentStrandTo, R, Model[R, V, I]] ||
+    known[DifferentStrandTo, R, Model[R, V, I]].sym ||
       `r∓s -| +r, -s` ||
-      `r∓s -| -r, +s`  ||
-      `r∓s -| s∓r` /* ||
+      `r∓s -| -r, +s` /* ||
       `r∓s -| r∓t, t±s` ||
       `r∓s -| r±t, t∓s` */
-  }
-
-  def `r∓s -| s∓r`[R, V, I] = Derive[DifferentStrandTo[R], Model[R, V, I]] { a =>
-    onlyIf(a.lhs != a.rhs) {
-      DifferentStrandTo(a.rhs, a.lhs) derive { proof =>
-        Proof(a, proof)
-      }
-    }
   }
 
   def `r∓s -| +r, -s`[R, V, I] = Derive[DifferentStrandTo[R], Model[R, V, I]] { a =>

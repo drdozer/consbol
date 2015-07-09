@@ -1,6 +1,7 @@
 package uk.co.turingatemyhamster.consbol
 
 import Derive._
+import uk.co.turingatemyhamster.consbol.util.Utils._
 
 object DeriveOrdModel {
 
