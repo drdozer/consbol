@@ -69,4 +69,5 @@ case class Disproof1[A, LHS](name: String,
 
 case class Disproof2[A, LHS, RHS](name: String,
                                   goal: A,
-                                  lhs: DProof[A]) extends Disproof[A]
+                                  lhs: DProof[A],
+                                  rhs: DProof[A]) extends Disproof[A]

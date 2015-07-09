@@ -10,7 +10,7 @@ object DeriveStrandModel {
     known[Strand, R, Model[R, V, I]] ||
       `±r -| r±s, ±s` ||
       `±r -| r∓s, ∓s`
-  } log
+  }
 
   def `±r -| r±s, ±s`[R, V, I] = Derive[Strand[R], Model[R, V, I]] { a =>
     a.orient.knowValue[Strand[R]] { rsProof =>
@@ -18,7 +18,7 @@ object DeriveStrandModel {
         Proof(a, rsProof, sProof)
       }
     }
-  } log
+  }
 
   def `±r -| r∓s, ∓s`[R, V, I] = Derive[Strand[R], Model[R, V, I]] { a =>
     a.orient.inverse.knowValue[Strand[R]] { rsProof =>
@@ -26,7 +26,7 @@ object DeriveStrandModel {
         Proof(a, rsProof, sProof)
       }
     }
-  } log
+  }
 
 
   def `r±s -| ?`[R, V, I]
@@ -34,10 +34,10 @@ object DeriveStrandModel {
     known[SameStrandAs, R, Model[R, V, I]] ||
       `r±s -| +r, +s` ||
       `r±s -| -r, -s` ||
-      `r±s -| s±r` ||
+      `r±s -| s±r` /* ||
       `r±s -| r±t, t±s` ||
-      `r±s -| r∓t, t∓s`
-  } log
+      `r±s -| r∓t, t∓s` */
+  }
 
   def `r±s -| +r, +s`[R, V, I] = Derive[SameStrandAs[R], Model[R, V, I]] { a =>
     Strand(a.lhs, Orientation.+) derive { lhsProof =>
@@ -45,7 +45,7 @@ object DeriveStrandModel {
         Proof(a, lhsProof, rhsProof)
       }
     }
-  } log
+  }
 
   def `r±s -| -r, -s`[R, V, I] = Derive[SameStrandAs[R], Model[R, V, I]] { a =>
     Strand(a.lhs, Orientation.-) derive { lhsProof =>
@@ -53,7 +53,7 @@ object DeriveStrandModel {
         Proof(a, lhsProof, rhsProof)
       }
     }
-  } log
+  }
 
   def `r±s -| s±r`[R, V, I] = Derive[SameStrandAs[R], Model[R, V, I]] { a =>
     onlyIf(a.lhs != a.rhs) {
@@ -61,7 +61,7 @@ object DeriveStrandModel {
         Proof(a, proof)
       }
     }
-  } log
+  }
 
   def `r±s -| r±t, t±s`[R, V, I] = Derive[SameStrandAs[R], Model[R, V, I]] { a =>
     a.lhs.knowLHS[SameStrandAs] { lhsProof =>
@@ -69,7 +69,7 @@ object DeriveStrandModel {
         Proof(a, lhsProof, rhsProof)
       }
     }
-  } log
+  }
 
   def `r±s -| r∓t, t∓s`[R, V, I] = Derive[SameStrandAs[R], Model[R, V, I]] { a =>
     a.lhs.knowLHS[DifferentStrandTo] { lhsProof =>
@@ -77,7 +77,7 @@ object DeriveStrandModel {
         Proof(a, lhsProof, rhsProof)
       }
     }
-  } log
+  }
 
 
   def `r∓s -| ?`[R, V, I]
@@ -85,10 +85,10 @@ object DeriveStrandModel {
     known[DifferentStrandTo, R, Model[R, V, I]] ||
       `r∓s -| +r, -s` ||
       `r∓s -| -r, +s`  ||
-      `r∓s -| s∓r` ||
+      `r∓s -| s∓r` /* ||
       `r∓s -| r∓t, t±s` ||
-      `r∓s -| r±t, t∓s`
-  } log
+      `r∓s -| r±t, t∓s` */
+  }
 
   def `r∓s -| s∓r`[R, V, I] = Derive[DifferentStrandTo[R], Model[R, V, I]] { a =>
     onlyIf(a.lhs != a.rhs) {
@@ -96,7 +96,7 @@ object DeriveStrandModel {
         Proof(a, proof)
       }
     }
-  } log
+  }
 
   def `r∓s -| +r, -s`[R, V, I] = Derive[DifferentStrandTo[R], Model[R, V, I]] { a =>
     Strand(a.lhs, Orientation.+) derive { lhsProof =>
@@ -104,7 +104,7 @@ object DeriveStrandModel {
         Proof(a, lhsProof, rhsProof)
       }
     }
-  } log
+  }
 
   def `r∓s -| -r, +s`[R, V, I] = Derive[DifferentStrandTo[R], Model[R, V, I]] { a =>
     Strand(a.lhs, Orientation.-) derive { lhsProof =>
@@ -112,7 +112,7 @@ object DeriveStrandModel {
         Proof(a, lhsProof, rhsProof)
       }
     }
-  } log
+  }
 
   def `r∓s -| r∓t, t±s`[R, V, I] = Derive[DifferentStrandTo[R], Model[R, V, I]] { a =>
     a.lhs.knowLHS[DifferentStrandTo] { lhsProof =>
