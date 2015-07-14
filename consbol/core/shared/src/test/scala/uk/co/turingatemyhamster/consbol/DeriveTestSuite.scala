@@ -364,14 +364,6 @@ object DeriveTestSuite extends TestSuite {
         'goal_is_correct - assert(d.head.value.goal == DifferentStrandTo('r, 's))
       }
 
-      'from_strand_explicit - {
-        val ds1 = ds0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-)
-        val d = DeriveStrandModel.`r∓s -| +r, -s` apply (DifferentStrandTo('r, 's), ds1)
-
-        'got_goal - assert(!d.isEmpty.value)
-        'goal_is_correct - assert(d.head.value._1.get.goal == DifferentStrandTo('r, 's))
-      }
-
       'from_strand - {
         val ds1 = ds0 tell Strand('r, Orientation.+) tell Strand('s, Orientation.-)
         val d = ds1 |- DifferentStrandTo('r, 's)

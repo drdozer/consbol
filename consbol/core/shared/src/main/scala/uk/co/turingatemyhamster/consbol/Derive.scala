@@ -1,6 +1,5 @@
 package uk.co.turingatemyhamster.consbol
 
-import uk.co.turingatemyhamster.consbol.util.Utils._
 import uk.co.turingatemyhamster.consbol.util.FuncName
 
 import scala.language.higherKinds
@@ -30,12 +29,13 @@ object DeriveLHS {
    ops: BinOp[A, R],
    d: Derive[A[R], M],
     r: Ranges[R, M],
-    t: Tell[A[R], M])
+    t: Tell[A[R], M],
+    fn: FuncName)
   : DeriveLHS[A, R, M] = new DeriveLHS[A, R, M] {
 
     override def apply(lhs: R): DerivationStep[A[R], M] = {
       allRanges[A[R], R, M] { rhs =>
-        ops.recompose(lhs, rhs) derive { p => p }
+        ops.recompose(lhs, rhs) derive (d => d, p => p)
       }
     }
   }
@@ -53,18 +53,22 @@ object Derive extends DeriveImplicits with DeriveLowPriorityImpicits {
   type DerivationStep[A, M] = DerivationState[M] => DerivationResults[A, M]
   type DerivationResults[A, M] = TrueStream[(DProof[A], DerivationState[M])]
 
-  def apply[A, M](d: A => DerivationStep[A, M]): Derive[A, M] = new Derive[A, M] {
+  def apply[A, M](d: A => DerivationStep[A, M])
+                 (implicit fn: FuncName): Derive[A, M] = new Derive[A, M]
+  {
     override def apply(a: A, ds0: DerivationState[M]): DerivationResults[A, M] =
       d(a)(ds0)
   }
 
   implicit class TrueStreamOps[A, M](val _s: Derive[A, M]) {
-    def ||(_t: Derive[A, M]) = Derive[A, M] { a => ds0 =>
+    def ||(_t: Derive[A, M]) = new Derive[A, M] {
+      override def apply(a: A, ds0: DerivationState[M]): DerivationResults[A, M] = {
         val k1 = _s(a, ds0)
         k1 mappend {
           val m1 = lastModel(k1, ds0.m0)
           _t(a, ds0 withModel m1)
         }
+      }
     }
 
     def log(implicit fn: FuncName): Derive[A, M] = Derive[A, M] { a => ds0 =>
@@ -74,26 +78,33 @@ object Derive extends DeriveImplicits with DeriveLowPriorityImpicits {
   }
 
   implicit class TrueStreamOps0[O[_], T, M](val _s: Derive[O[T], M]) {
-    def swap(implicit b: BinOp[O, T]): Derive[O[T], M] = Derive[O[T], M] { a => ds0 =>
+    def swap(implicit b: BinOp[O, T], fn: FuncName): Derive[O[T], M] = Derive[O[T], M] { a => ds0 =>
         val (l, r) = b.decompose(a)
         val i = b.recompose(r, l)
         _s(i, ds0)
     }
 
-    def sym(implicit b: BinOp[O, T]): Derive[O[T], M] =
+    def sym(implicit b: BinOp[O, T], fn: FuncName): Derive[O[T], M] =
       _s || _s.swap
   }
 
-  def guard[A, M](d: Derive[A, M]) = Derive[A, M] { a => ds0 =>
+  def guard[A, M](d: Derive[A, M])(implicit fn: FuncName) = Derive[A, M] { a => ds0 =>
       if(ds0.cuts contains a)
-        StreamT.empty
+      {
+        println(s"guard $a ${ds0.cuts} !")
+        (DProof.cut(a, ds0.cuts) -> ds0).point[TrueStream]
+      }
       else
-        d(a, ds0 withCut a)
+      {
+        println(s"guard $a ${ds0.cuts}")
+        d(a, ds0 withCut a) map (ds => (DProof1(a, ds._1), ds._2 withCuts ds0.cuts))
+      }
   }
 
   def known[A[_], T, M]
-  (implicit k: Know[A, T, M]) = Derive[A[T], M] { a => ds0 =>
-      k(a, ds0.m0) map (pa => pa.right -> ds0)
+  (implicit k: Know[A, T, M], fn: FuncName) = Derive[A[T], M] { a => ds0 =>
+      k(a, ds0.m0) map
+         (_ -> ds0)
   }
 
   def onlyIf[A, B, M](p: Boolean)(f: DerivationStep[B, M])
@@ -104,38 +115,68 @@ object Derive extends DeriveImplicits with DeriveLowPriorityImpicits {
       _ => StreamT.empty
 
   def derivationStep[A, B, M](rs: DerivationResults[A, M],
-                              f: Proof[A] => DerivationStep[B, M])
+                              fd: Disproof[A] => DerivationStep[B, M],
+                              fp: Proof[A] => DerivationStep[B, M])
+                             (implicit fn: FuncName)
   : DerivationResults[B, M] = rs flatMap {
     case (s1O, ds1) =>
       s1O fold(
-        dp => (Disproof.cut[B, A](dp) -> ds1).point[TrueStream],
-        p => f(p)(ds1))
+        d => d.left,
+        p => if(ds1.cuts contains p.goal) DProof.cut(p.goal, ds1.cuts) else p.right
+      ) fold(
+        d => fd(d)(ds1),
+        p => fp(p)(ds1))
   }
 
   implicit class AssertionOps[A](val _a: A) {
-    def derive[B, M](f: Proof[A] => DerivationStep[B, M])
-                    (implicit d: Derive[A, M]): DerivationStep[B, M] = ds0 =>
-      derivationStep(d(_a, ds0), f)
+    def derive[B, M](fd: Disproof[A] => DerivationStep[B, M],
+                    fp: Proof[A] => DerivationStep[B, M])
+                    (implicit d: Derive[A, M], fn: FuncName): DerivationStep[B, M] = ds0 =>
+      derivationStep(d(_a, ds0), fd, fp)
   }
 
   implicit class ValueOps[L](val _lhs: L) {
     def deriveLHS[A[_]] = new {
-      def apply[B, M](f: Proof[A[L]] => DerivationStep[B, M])
-                     (implicit d: DeriveLHS[A, L, M]): DerivationStep[B, M] = ds0 =>
-        derivationStep(d(_lhs)(ds0), f)
+      def apply[B, M](fd: Disproof[A[L]] => DerivationStep[B, M])
+                     (fp: Proof[A[L]] => DerivationStep[B, M])
+                     (implicit d: DeriveLHS[A, L, M], fn: FuncName): DerivationStep[B, M] = ds0 =>
+        derivationStep(d(_lhs)(ds0), fd, fp)
     }
 
     def knowLHS[A[_]] = new {
-      def apply[B, M](f: Proof[A[L]] => DerivationStep[B, M])
-                     (implicit k: Know[A, L, M]): DerivationStep[B, M] = { ds0 =>
-        k.byLHS(_lhs, ds0.m0) flatMap (b => f(b)(ds0))
+      def apply[B, M](fd: Disproof[A[L]] => DerivationStep[B, M],
+                      fp: Proof[A[L]] => DerivationStep[B, M])
+                     (implicit k: Know[A, L, M], fn: FuncName): DerivationStep[B, M] = { ds0 =>
+        k.byLHS(_lhs, ds0.m0) map
+          (_.fold(
+            d => d.left,
+            p => if(ds0.cuts contains p.goal) DProof.cut(p.goal, ds0.cuts) else p.right
+          )) flatMap (_.fold(fd(_)(ds0), fp(_)(ds0)))
+      }
+    }
+
+    def knowRHS[A[_]] = new {
+      def apply[B, M](fd: Disproof[A[L]] => DerivationStep[B, M],
+                      fp: Proof[A[L]] => DerivationStep[B, M])
+                     (implicit k: Know[A, L, M], fn: FuncName): DerivationStep[B, M] = { ds0 =>
+        k.byRHS(_lhs, ds0.m0) map
+          (_.fold(
+            d => d.left,
+            p => if(ds0.cuts contains p.goal) DProof.cut(p.goal, ds0.cuts) else p.right
+          )) flatMap (_.fold(fd(_)(ds0), fp(_)(ds0)))
       }
     }
 
     def knowValue[A] = new {
-      def apply[B, M](f: Proof[A] => DerivationStep[B, M])
-                        (implicit k: KnowValue[A, L, M]): DerivationStep[B, M] = { ds0 =>
-        k(_lhs, ds0.m0) flatMap (a => f(Fact(a))(ds0))
+      def apply[B, M](fd: Disproof[A] => DerivationStep[B, M],
+                      fp: Proof[A] => DerivationStep[B, M])
+                     (implicit k: KnowValue[A, L, M], fn: FuncName): DerivationStep[B, M] = { ds0 =>
+        k(_lhs, ds0.m0) map
+          (a => Proof.fact(a).right[Disproof[A]]) map
+          (_.fold(
+            d => d.left,
+            p => if(ds0.cuts contains p.goal) DProof.cut(p.goal, ds0.cuts) else p.right
+          )) flatMap (_.fold(fd(_)(ds0), fp(_)(ds0)))
       }
     }
   }
@@ -145,8 +186,14 @@ object Derive extends DeriveImplicits with DeriveLowPriorityImpicits {
     r(ds0.m0) flatMap (rg => f(rg)(ds0))
   }
 
-  implicit def result[A, M](p: Proof[A])(implicit t: Tell[A, M]): DerivationStep[A, M] = ds0 =>
+  implicit def resultP[A, M](p: Proof[A])(implicit t: Tell[A, M]): DerivationStep[A, M] = ds0 =>
     (p.right[Disproof[A]] -> (ds0 tell p.goal)).point[TrueStream]
+
+  implicit def resultD[A, M](p: Disproof[A]): DerivationStep[A, M] = ds0 =>
+    (p.left[Proof[A]] -> ds0).point[TrueStream]
+
+  implicit def result[A, M](p: DProof[A])(implicit t: Tell[A, M]): DerivationStep[A, M] =
+    p.fold(d => resultD(d), p => resultP(p))
 
   def lastModel[A, M](str: DerivationResults[A, M], m0: M): M =
     (str.foldLeft(m0) { case (_, (_, ds)) => ds.m0 }).value
@@ -190,11 +237,12 @@ trait DeriveLowPriorityImpicits {
   implicit def derive_usingInterpretation[A[_], R, V, I]
   (implicit
    in: Interpretation[A[V], A[I], Model[R, V, I]],
-   d: Derive[A[I], Model[R, V, I]]) = Derive[A[V], Model[R, V, I]] { a => ds0 =>
+   d: Derive[A[I], Model[R, V, I]],
+   fn: FuncName) = Derive[A[V], Model[R, V, I]] { a => ds0 =>
       val (a1, ds1) = ds0 interpretation a
       d(a1, ds1) map { case (p, ds) => p.fold(
       p => DProof.interpreted(a, p),
       p => DProof.interpreted(a, p)) -> ds }
-   }
+   } (fn)
 
 }

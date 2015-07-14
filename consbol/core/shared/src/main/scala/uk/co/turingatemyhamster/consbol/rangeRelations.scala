@@ -29,7 +29,7 @@ case class SameStrandAs[R](lhs: R, rhs: R) {
 }
 
 case class DifferentStrandTo[R](lhs: R, rhs: R) {
-  override def toString = s"$lhs∓t$rhs"
+  override def toString = s"$lhs∓$rhs"
 }
 
 case class ShorterThan[R](lhs: R, rhs: R)
