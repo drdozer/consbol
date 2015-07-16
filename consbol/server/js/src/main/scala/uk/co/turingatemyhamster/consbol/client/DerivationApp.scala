@@ -77,19 +77,23 @@ object DerivationApp {
 
   @JSExport
   def render(to: html.Div): Unit = {
-    val ds0 = DerivationState(m0 = Model.empty[Symbol, Symbol, String])
+    val dm = DeriveRules.apply[Symbol, Symbol, String]
+    val ds0 = DerivationState(env = DeriveEnv(dm), m0 = Model.empty[Symbol, Symbol, String])
     val ds1 = ds0 tell
       Strand('z, Orientation.+) tell
       DifferentStrandTo('y, 'z) tell
       SameStrandAs('y, 'x) tell
       SameStrandAs('w, 'x)
 
+    import ds1.env._
+
     val res = derivation(DifferentStrandTo('x, 'z), ds1)
+    val resL = res.take(50)
 //    val res = derivation(Strand('x, Orientation.-), ds1)
     val dl = Dynamic.literal
 
-    val failures = res.takeWhile(_._1.isLeft)
-    val theRest = res.dropWhile(_._1.isLeft)
+    val failures = resL.takeWhile(_._1.isLeft)
+    val theRest = resL.dropWhile(_._1.isLeft)
     val toFirstSuccess = failures mappend theRest.take(1)
 
     val x = js.Array(toFirstSuccess.map(r => unpack(r._1)).toStream.value :_*)
@@ -108,5 +112,5 @@ object DerivationApp {
 
   }
 
-  def derivation[A, M](a: A, m: DerivationState[M])(implicit d: Derive[A, M]) = d(a, m)
+  def derivation[A, R, V, I](a: A, m: DerivationState[R, V, I])(implicit d: Derive[A, R, V, I]) = d(a, m)
 }

@@ -3,7 +3,7 @@ package uk.co.turingatemyhamster.consbol
 
 import uk.co.turingatemyhamster.consbol.Derive.DProof
 import utest._
-import uk.co.turingatemyhamster.consbol.util.Utils._
+import uk.co.turingatemyhamster.consbol.util.FuncNameUtils._
 
 object KnowTestSuite extends TestSuite {
 
@@ -94,7 +94,7 @@ object KnowTestSuite extends TestSuite {
         'got_right_result_11 - assert(checkResult(ka_11, AT('a, 11)))
         'got_only_one_result_11 - assert(ka_11.tail.isEmpty.value)
 
-        'got_no_result_12 - assert(ka_12.isEmpty.value)
+        'got_no_result_12 - assert(ka_12.filter(_.isRight).isEmpty.value)
       }
 
       'strand - {

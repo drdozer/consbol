@@ -272,17 +272,17 @@ trait KnowLowPriorityImplicits {
   
   import Know.KnowOps
 
-  implicit def know_dsFromModel[A[_], T, M]
-  (implicit k: Know[A, T, M])
-  : Know[A, T, DerivationState[M]] = new Know[A, T, DerivationState[M]] {
-    override def byLHS(lhs: T, ds0: DerivationState[M]): TrueStream[DProof[A[T]]] =
+  implicit def know_dsFromModel[A[_], T, R, V, I]
+  (implicit k: Know[A, T, Model[R, V, I]])
+  : Know[A, T, DerivationState[R, V, I]] = new Know[A, T, DerivationState[R, V, I]] {
+    override def byLHS(lhs: T, ds0: DerivationState[R, V, I]): TrueStream[DProof[A[T]]] =
       ds0.m0.knowLHS[A, T](lhs)
 
 
-    override def byRHS(rhs: T, ds0: DerivationState[M]): TrueStream[DProof[A[T]]] =
+    override def byRHS(rhs: T, ds0: DerivationState[R, V, I]): TrueStream[DProof[A[T]]] =
       ds0.m0.knowRHS[A, T](rhs)
 
-    override def apply(a: A[T], ds0: DerivationState[M]): TrueStream[DProof[A[T]]] =
+    override def apply(a: A[T], ds0: DerivationState[R, V, I]): TrueStream[DProof[A[T]]] =
       ds0.m0 know a
   }
 

@@ -18,13 +18,13 @@ object Interpretation {
       in.unapply(a, _m)
   }
 
-  implicit def dsInterpretation[TV, TI, M]
-  (implicit mi: Interpretation[TV, TI, M])
-  : Interpretation[TV, TI, DerivationState[M]] = new Interpretation[TV, TI, DerivationState[M]] {
-    override def unapply(a: TI, ds0: DerivationState[M]): Option[TV] =
+  implicit def dsInterpretation[TV, TI, R, V, I]
+  (implicit mi: Interpretation[TV, TI, Model[R, V, I]])
+  : Interpretation[TV, TI, DerivationState[R, V, I]] = new Interpretation[TV, TI, DerivationState[R, V, I]] {
+    override def unapply(a: TI, ds0: DerivationState[R, V, I]): Option[TV] =
       ds0.m0 coimage a
 
-    override def apply(a: TV, ds0: DerivationState[M]): (TI, DerivationState[M]) = {
+    override def apply(a: TV, ds0: DerivationState[R, V, I]): (TI, DerivationState[R, V, I]) = {
       val (ti, m1) = ds0.m0 interpretation a
       ti -> (ds0 withModel m1)
     }
@@ -96,32 +96,6 @@ object Interpretation {
 }
 
 
-//trait Interpretations[I, M] {
-//  def apply(m: M): TrueStream[I]
-//}
-//
-//object Interpretations {
-//
-//  implicit class InterpretationsOps[M](val _m: M) {
-//    def allInterpretations[I](implicit in: Interpretations[I, M]): TrueStream[I] =
-//      in.apply(_m)
-//  }
-//
-//  implicit def interpretations_interpModel[V, I]
-//  : Interpretations[I, InterpModel[V, I]] = new Interpretations[I, InterpModel[V, I]] {
-//    override def apply(m: InterpModel[V, I]): TrueStream[I] =
-//      StreamT.fromStream(Need(m.eq.keys.to[Stream]))
-//  }
-//
-//  implicit def interpretations_model[V, I]
-//  : Interpretations[I, Model[V, I]] = new Interpretations[I, Model[V, I]] {
-//    override def apply(m: Model[V, I]): TrueStream[I] =
-//      m.i.allInterpretations
-//  }
-//
-//}
-
-
 trait InterpretationSingleton[V, I] {
   def singleton(v: V): I
 
@@ -164,10 +138,10 @@ object Ranges {
       r(_m)
   }
 
-  implicit def derivationStateRanges[R, M]
-  (implicit mr: Ranges[R, M])
-  : Ranges[R, DerivationState[M]] = new Ranges[R, DerivationState[M]] {
-    override def apply(m: DerivationState[M]): TrueStream[R] =
+  implicit def derivationStateRanges[R, V, I]
+  (implicit mr: Ranges[R, Model[R, V, I]])
+  : Ranges[R, DerivationState[R, V, I]] = new Ranges[R, DerivationState[R, V, I]] {
+    override def apply(m: DerivationState[R, V, I]): TrueStream[R] =
       m.m0.allRanges
   }
 

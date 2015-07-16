@@ -5,7 +5,7 @@ import scala.language.experimental.macros
 
 case class FuncName(name: String, fullName: String)
 
-object Utils {
+object FuncNameUtils {
   implicit def enclosingFunctionName: FuncName = macro funcNameImpl
 
   def funcNameImpl(c: Compat.Context): c.Expr[FuncName] = {
