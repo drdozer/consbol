@@ -72,23 +72,40 @@ object DeriveIndexTestSuite extends TestSuite with DeriveTestSuite {
       }
 
       'derive_bAt - {
-        val ds1 = ds0 tell Suc('a, 'b) tell At('a, 10)
+        val ds1 = ds0 tell Suc('a, 'b) tell AT('a, 10)
 
         val d = ds1 |- AT('b, 11)
 
         'got_goal - assert(!d.isEmpty.value)
-        'goal_is_correct - assert(d.head.value.goal = At('b, 11))
+        'goal_is_correct - assert(d.head.value.goal == AT('b, 11))
       }
 
       'derive_aAt - {
-        val ds1 = ds0 tell Suc('a, 'b) tell At('b, 11)
+        val ds1 = ds0 tell Suc('a, 'b) tell AT('b, 11)
 
         val d = ds1 |- AT('a, 10)
 
         'got_goal - assert(!d.isEmpty.value)
-        'goal_is_correct - assert(d.head.value.goal = At('a, 10))
+        'goal_is_correct - assert(d.head.value.goal == AT('a, 10))
       }
 
+      'deriveLtEq - {
+        val ds1 = ds0 tell LT('a, 'c) tell Suc('b, 'c)
+
+        val d = ds1 |- LT_EQ('a, 'b)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value.goal == LT_EQ('a, 'b))
+      }
+
+      'deriveNotEq - {
+        val ds1 = ds0 tell Suc('a, 'b)
+
+        val d = ds1 |- NOT_EQ('a, 'b)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value.goal == NOT_EQ('a, 'b))
+      }
     }
 
     'lt_eq - {

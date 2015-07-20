@@ -127,33 +127,45 @@ object UnifyI {
 }
 
 
-trait Ranges[R, M] {
-  def apply(m: M): TrueStream[R]
+trait Atoms[T, M] {
+  def apply(m: M): TrueStream[T]
 }
 
-object Ranges {
+object Atoms {
 
-  implicit class RangesOps[R, M](val _m: M) {
-    def allRanges(implicit r: Ranges[R, M]): TrueStream[R] =
+  implicit class AtomsOps[T, M](val _m: M) {
+    def all(implicit r: Atoms[T, M]): TrueStream[T] =
       r(_m)
   }
 
-  implicit def derivationStateRanges[R, V, I]
-  (implicit mr: Ranges[R, Model[R, V, I]])
-  : Ranges[R, DerivationState[R, V, I]] = new Ranges[R, DerivationState[R, V, I]] {
-    override def apply(m: DerivationState[R, V, I]): TrueStream[R] =
-      m.m0.allRanges
+  implicit def derivationStateRanges[T, R, V, I]
+  (implicit mr: Atoms[T, Model[R, V, I]])
+  : Atoms[T, DerivationState[R, V, I]] = new Atoms[T, DerivationState[R, V, I]] {
+    override def apply(m: DerivationState[R, V, I]): TrueStream[T] =
+      m.m0.all
   }
 
   implicit def modelRanges[R, V, I]
-  (implicit sr: Ranges[R, StrandModel[R]])
-  : Ranges[R, Model[R, V, I]] = new Ranges[R, Model[R, V, I]] {
+  (implicit sr: Atoms[R, StrandModel[R]])
+  : Atoms[R, Model[R, V, I]] = new Atoms[R, Model[R, V, I]] {
     override def apply(m: Model[R, V, I]): TrueStream[R] =
-      m.str.allRanges
+      m.str.all
   }
 
-  implicit def StrandModelRanges[R]: Ranges[R, StrandModel[R]] = new Ranges[R, StrandModel[R]] {
+  implicit def StrandModelRanges[R]: Atoms[R, StrandModel[R]] = new Atoms[R, StrandModel[R]] {
     override def apply(m: StrandModel[R]): TrueStream[R] =
       TrueStream(Set() ++ m.same_strand_as.map(_._1) ++ m.same_strand_as.map(_._2) ++ m.strand.keys)
+  }
+
+  implicit def modelIndexes[R, V, I]
+  (implicit sr: Atoms[I, InterpModel[V, I]])
+  : Atoms[I, Model[R, V, I]] = new Atoms[I, Model[R, V, I]] {
+    override def apply(m: Model[R, V, I]): TrueStream[I] =
+      m.i.all
+  }
+
+  implicit def InterpretationModelIndexes[V, I]: Atoms[I, InterpModel[V, I]] = new Atoms[I, InterpModel[V, I]] {
+    override def apply(m: InterpModel[V, I]): TrueStream[I] =
+      TrueStream(m.eq.keySet)
   }
 }

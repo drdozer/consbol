@@ -23,6 +23,10 @@ trait DeriveLHS[A[_], T, R, V, I] {
   def apply(lhs: T): DerivationStep[A[T], R, V, I]
 }
 
+trait DeriveRHS[A[_], T, R, V, I] {
+  def apply(rhs: T): DerivationStep[A[T], R, V, I]
+}
+
 trait Derive[A, R, V, I] {
   def apply(a: A, ds: DerivationState[R, V, I]): DerivationResults[A, R, V, I]
 }
@@ -68,14 +72,60 @@ trait DeriveDSL[R, V, I] {
   (implicit
    ops: BinOp[A, R],
    d: Derive[A[R], R, V, I],
-   r: Ranges[R, Model[R, V, I]],
+   r: Atoms[R, Model[R, V, I]],
    t: Tell[A[R], DerivationState[R, V, I]],
    fn: FuncName)
   : DeriveLHS[A, R, R, V, I] = new DeriveLHS[A, R, R, V, I] {
 
     override def apply(lhs: R): DerivationStep[A[R], R, V, I] = {
-      allRanges[A[R]] { rhs =>
-        ops.recompose(lhs, rhs) derive (d => d, p => p)
+      all[A, R] { rhs =>
+        ops.recompose(lhs -> rhs) derive (d => d, p => p)
+      }
+    }
+  }
+
+  implicit def lhsFromIndexes[A[_]]
+  (implicit
+   ops: BinOp[A, I],
+   d: Derive[A[I], R, V, I],
+   r: Atoms[I, Model[R, V, I]],
+   t: Tell[A[I], DerivationState[R, V, I]],
+   fn: FuncName)
+  : DeriveLHS[A, I, R, V, I] = new DeriveLHS[A, I, R, V, I] {
+    override def apply(lhs: I): DerivationStep[A[I], R, V, I] = {
+      all[A, I] { rhs =>
+        ops.recompose(lhs -> rhs) derive (d => d, p => p)
+      }
+    }
+  }
+
+  implicit def rhsFromRanges[A[_]]
+  (implicit
+   ops: BinOp[A, R],
+   d: Derive[A[R], R, V, I],
+   r: Atoms[R, Model[R, V, I]],
+   t: Tell[A[R], DerivationState[R, V, I]],
+   fn: FuncName)
+  : DeriveRHS[A, R, R, V, I] = new DeriveRHS[A, R, R, V, I] {
+
+    override def apply(rhs: R): DerivationStep[A[R], R, V, I] = {
+      all[A, R] { lhs =>
+        ops.recompose(lhs -> rhs) derive (d => d, p => p)
+      }
+    }
+  }
+
+  implicit def rhsFromIndexes[A[_]]
+  (implicit
+   ops: BinOp[A, I],
+   d: Derive[A[I], R, V, I],
+   r: Atoms[I, Model[R, V, I]],
+   t: Tell[A[I], DerivationState[R, V, I]],
+   fn: FuncName)
+  : DeriveRHS[A, I, R, V, I] = new DeriveRHS[A, I, R, V, I] {
+    override def apply(rhs: I): DerivationStep[A[I], R, V, I] = {
+      all[A, I] { lhs =>
+        ops.recompose(lhs -> rhs) derive (d => d, p => p)
       }
     }
   }
@@ -176,9 +226,16 @@ trait DeriveDSL[R, V, I] {
 
   implicit class ValueOps[L](val _lhs: L) {
     def deriveLHS[A[_]] = new {
-      def apply[B](fd: Disproof[A[L]] => DerivationStep[B, R, V, I])
-                  (fp: Proof[A[L]] => DerivationStep[B, R, V, I])
+      def apply[B](fd: Disproof[A[L]] => DerivationStep[B, R, V, I],
+                   fp: Proof[A[L]] => DerivationStep[B, R, V, I])
                   (implicit d: DeriveLHS[A, L, R, V, I], fn: FuncName): DerivationStep[B, R, V, I] = ds0 =>
+        derivationStep(d(_lhs)(ds0), fd, fp)
+    }
+
+    def deriveRHS[A[_]] = new {
+      def apply[B](fd: Disproof[A[L]] => DerivationStep[B, R, V, I],
+                   fp: Proof[A[L]] => DerivationStep[B, R, V, I])
+                  (implicit d: DeriveRHS[A, L, R, V, I], fn: FuncName): DerivationStep[B, R, V, I] = ds0 =>
         derivationStep(d(_lhs)(ds0), fd, fp)
     }
 
@@ -220,8 +277,8 @@ trait DeriveDSL[R, V, I] {
     }
   }
 
-  def allRanges[A](f: R => DerivationStep[A, R, V, I])
-                  (implicit r: Ranges[R, Model[R, V, I]]): DerivationStep[A, R, V, I] = { ds0 =>
+  def all[A[_], T](f: T => DerivationStep[A[T], R, V, I])
+            (implicit r: Atoms[T, Model[R, V, I]]): DerivationStep[A[T], R, V, I] = { ds0 =>
     r(ds0.m0) flatMap (rg => f(rg)(ds0))
   }
 
@@ -285,6 +342,7 @@ case class DeriveEnv[R, V, I](rules: DeriveRules[R, V, I],
                               derives_EQ: List[Derive[EQ[I], R, V, I]],
                               derives_NOT_EQ: List[Derive[NOT_EQ[I], R, V, I]],
                               derives_AT: List[Derive[AT[I], R, V, I]],
+                              derives_Suc: List[Derive[Suc[I], R, V, I]],
                               derives_SameStrandAs: List[Derive[SameStrandAs[R], R, V, I]],
                               derives_DifferentStrandTo: List[Derive[DifferentStrandTo[R], R, V, I]],
                               derives_Strand: List[Derive[Strand[R], R, V, I]])
@@ -299,6 +357,7 @@ object DeriveEnv {
     derives_LT =
       rules.`a < b -| k(a < b)` ::
         rules.`a < b -| a @ i, b @ j, i < j` ::
+        rules.`a < b -| suc(a, b)` ::
         rules.`a < c -| a < b, b < c` ::
         rules.`a < c -| a < b, b <= c` ::
         rules.`a < c -| a <= b, b < c` ::
@@ -307,11 +366,14 @@ object DeriveEnv {
       rules.`a <= b -| k(a <= b)` ::
         rules.`a <= b -| a @ i, b @ j, i <= j` ::
         rules.`a <= b -| a < b` ::
+        rules.`a <= b -| ∃c: b suc c. a < c` ::
         rules.`a <= c -| a <= b, b <= c` ::
         Nil,
     derives_EQ =
       rules.`a = b -| a @ i, b @ j, i = j` ::
         rules.`a = b -| a <=b, b <= a` ::
+        rules.`a = b -| ∃c: a suc c, b suc c` ::
+        rules.`a = b -| ∃c: c suc a, c suc b` ::
         Nil,
     derives_NOT_EQ =
       rules.`a != b -| k(a != b)` ::
@@ -322,6 +384,12 @@ object DeriveEnv {
 
     derives_AT =
       rules.`a @ i -| k(a @ i)` ::
+        rules.`a @ i -| ∃b: k(a suc b), b @ (i+1)` ::
+        rules.`a @ i -| ∃b: k(b suc a), b @ (i-1)` ::
+        Nil,
+    derives_Suc =
+      rules.`a suc b -| k(a suc b)` ::
+        rules.`a suc b -| a @ i, b @ j | i+1=j` ::
         Nil,
 
     derives_SameStrandAs =

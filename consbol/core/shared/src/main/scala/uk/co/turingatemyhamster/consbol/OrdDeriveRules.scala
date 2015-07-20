@@ -24,7 +24,7 @@ trait OrdDeriveEnv[R, V, I] {
 trait OrdDeriveRules[R, V, I] {
   self : DeriveDSL[R, V, I] =>
 
-  final lazy val `a < b -| k(a < b)` = known[LT, I] log
+  final lazy val `a < b -| k(a < b)` = known[LT, I]
 
   final lazy val `a < c -| a < b, b <= c` = withEnv[LT[I]] { env => a =>
     import env._
@@ -35,7 +35,7 @@ trait OrdDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `a < c -| a <= b, b < c` = withEnv[LT[I]] { env => a =>
     import env._
@@ -46,7 +46,7 @@ trait OrdDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
 
   final lazy val `a < c -| a < b, b < c` = withEnv[LT[I]] { env => a =>
@@ -58,9 +58,9 @@ trait OrdDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
-  final lazy val `a <= b -| k(a <= b)` = known[LT_EQ, I] log
+  final lazy val `a <= b -| k(a <= b)` = known[LT_EQ, I]
 
   final lazy val `a <= c -| a <= b, b <= c` = withEnv[LT_EQ[I]] { env => a =>
     import env._
@@ -71,7 +71,7 @@ trait OrdDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `a <= b -| a < b` = withEnv[LT_EQ[I]] { env => a =>
     import env._
@@ -79,7 +79,7 @@ trait OrdDeriveRules[R, V, I] {
       lhsD => Disproof1(a, lhsD),
       lhsP => Proof1(a, lhsP)
     )
-  } log
+  }
 
 
   final lazy val `a = b -| a <=b, b <= a` = withEnv[EQ[I]] { env => a =>
@@ -91,9 +91,9 @@ trait OrdDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
-  final lazy val `a != b -| k(a != b)` = known[NOT_EQ, I] log
+  final lazy val `a != b -| k(a != b)` = known[NOT_EQ, I]
 
   final lazy val `a != b -| a < b` = withEnv[NOT_EQ[I]] { env => a =>
     import env._
@@ -101,7 +101,7 @@ trait OrdDeriveRules[R, V, I] {
       lhsD => Disproof1(a, lhsD),
       lhsP => Proof1(a, lhsP)
     )
-  } log
+  }
 
   final lazy val `a != b -| b < a` = withEnv[NOT_EQ[I]] { env => a =>
     import env._
@@ -109,6 +109,6 @@ trait OrdDeriveRules[R, V, I] {
       lhsD => Disproof1(a, lhsD),
       lhsP => Proof1(a, lhsP)
     )
-  } log
+  }
 
 }

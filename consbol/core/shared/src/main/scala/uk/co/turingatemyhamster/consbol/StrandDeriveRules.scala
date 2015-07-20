@@ -10,13 +10,13 @@ trait StrandDeriveEnv[R, V, I] {
 
   import rules._
 
-  implicit lazy final val `±r -| ?` = guard { derives_Strand.reduce(_ || _) } log
+  implicit lazy final val `±r -| ?` = guard { derives_Strand.reduce(_ || _) }
   def derives_Strand: List[Derive[Strand[R], R, V, I]]
 
-  implicit lazy final val `r±s -| ?` = guard { derives_SameStrandAs.reduce(_ || _) } log
+  implicit lazy final val `r±s -| ?` = guard { derives_SameStrandAs.reduce(_ || _) }
   def derives_SameStrandAs: List[Derive[SameStrandAs[R], R, V, I]]
 
-  implicit lazy final val `r∓s -| ?` = guard { derives_DifferentStrandTo.reduce(_ || _) } log
+  implicit lazy final val `r∓s -| ?` = guard { derives_DifferentStrandTo.reduce(_ || _) }
   def derives_DifferentStrandTo: List[Derive[DifferentStrandTo[R], R, V, I]]
 }
 
@@ -32,7 +32,7 @@ trait StrandDeriveRules[R, V, I] {
   def `r ⇒ ∃s: k(s±r)`(r: R) = r.knowRHS[SameStrandAs]
   def `r ⇒ ∃s: k(s∓r)`(r: R) = r.knowRHS[DifferentStrandTo]
 
-  final lazy val `±r -| k(±r)` = known[Strand, R] log
+  final lazy val `±r -| k(±r)` = known[Strand, R]
 
   final lazy val `±r -| ∃s: ±s. r±s` = withEnv[Strand[R]] { env => a =>
     import env._
@@ -45,7 +45,7 @@ trait StrandDeriveRules[R, V, I] {
         )
       }
     )
-  } log
+  }
 
   final lazy val `±r -| ∃s: ∓s, r∓s` = withEnv[Strand[R]] { env => a =>
     import env._
@@ -58,12 +58,12 @@ trait StrandDeriveRules[R, V, I] {
         )
       }
     )
-  } log
+  }
 
 
-  final lazy val `r±s -| k(r±s) or k(s±r)` = `r±s -| k(r±s)`.sym log
+  final lazy val `r±s -| k(r±s) or k(s±r)` = `r±s -| k(r±s)`.sym
 
-  final lazy val `r±s -| k(r±s)` = known[SameStrandAs, R] log
+  final lazy val `r±s -| k(r±s)` = known[SameStrandAs, R]
 
   final lazy val `r±s -| +r, +s` = withEnv[SameStrandAs[R]] { env => a =>
     import env._
@@ -74,7 +74,7 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `r±s -| -r, -s` = withEnv[SameStrandAs[R]] { env => a =>
     import env._
@@ -85,7 +85,7 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
 
   final lazy val `r±s -| ∃t: k(r±t). t±s` = withEnv[SameStrandAs[R]] { env => a =>
@@ -97,7 +97,7 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `r±s -| ∃t: k(r∓t). t∓s` = withEnv[SameStrandAs[R]] { env => a =>
     import env._
@@ -108,7 +108,7 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `r±s -| ∃t: k(t±r). t±s` = withEnv[SameStrandAs[R]] { env => a =>
     import env._
@@ -119,7 +119,7 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `r±s -| ∃t: k(t∓r). t∓s` = withEnv[SameStrandAs[R]] { env => a =>
     import env._
@@ -130,12 +130,12 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
 
-  final lazy val `r∓s -| k(r∓s)` = known[DifferentStrandTo, R] log
+  final lazy val `r∓s -| k(r∓s)` = known[DifferentStrandTo, R]
 
-  final lazy val `r∓s -| k(r∓s) or k(s∓r)` = `r∓s -| k(r∓s)`.sym log
+  final lazy val `r∓s -| k(r∓s) or k(s∓r)` = `r∓s -| k(r∓s)`.sym
 
   final lazy val `r∓s -| +r, -s` = withEnv[DifferentStrandTo[R]] { env => a =>
     import env._
@@ -146,7 +146,7 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `r∓s -| -r, +s` = withEnv[DifferentStrandTo[R]] { env => a =>
     import env._
@@ -157,7 +157,7 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `r∓s -| ∃t: k(r∓t). t±s` = withEnv[DifferentStrandTo[R]] { env => a =>
     import env._
@@ -168,7 +168,7 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `r∓s -| ∃t: k(r±t). t∓s` = withEnv[DifferentStrandTo[R]] { env => a =>
     import env._
@@ -179,7 +179,7 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `r∓s -| ∃t: k(t∓r). t±s` = withEnv[DifferentStrandTo[R]] { env => a =>
     import env._
@@ -190,7 +190,7 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 
   final lazy val `r∓s -| ∃t: k(t±r). t∓s` = withEnv[DifferentStrandTo[R]] { env => a =>
     import env._
@@ -201,6 +201,6 @@ trait StrandDeriveRules[R, V, I] {
         rhsP => Proof2(a, lhsP, rhsP)
       )
     )
-  } log
+  }
 }
 
