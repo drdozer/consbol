@@ -101,6 +101,21 @@ object TellTestSuite extends TestSuite {
         assert(m1.index.at(bI) contains 13)
       }
 
+      'suc - {
+        'implicits - {
+          implicitly[Tell[Suc[String], IndexModel[String]]]
+          implicitly[Tell[Suc[String], Model[Symbol, Symbol, String]]]
+          implicitly[Tell[Suc[Symbol], Model[Symbol, Symbol, String]]]
+        }
+
+        val m1 = m0 tell Suc('a, 'b)
+
+        val aI = m1.i.v2i('a)
+        val bI = m1.i.v2i('b)
+
+        assert(m1.index.suc contains (aI -> bI))
+      }
+
       'strand - {
         'orientation - {
 

@@ -49,6 +49,10 @@ object Normalize extends NormalizeLowPriority {
     translate[NOT_GT, LT_EQ, T]
 
 
+  implicit def norm_pre[T]: Normalize[Pre, Suc, T] =
+    swap[Pre, Suc, T]
+
+
   implicit def norm_not_shorter_than[T]: Normalize[NotShorterThan, NotLongerThan, T] =
     swap[NotShorterThan, NotLongerThan, T]
 

@@ -138,7 +138,7 @@ trait DeriveDSL[R, V, I] {
   }
 
   def newEnv[A](env: DeriveEnv[R, V, I])(fp: Proof[A] => DerivationStep[A, R, V, I]): Proof[A] => DerivationStep[A, R, V, I] = p => ds0 =>
-    fp(p)(ds0.copy(env = env))
+    fp(p)(ds0.copy(env = env)) map { case (dp, ds1) => (dp, ds1.copy(env = ds0.env)) }
 
   def known[A[_], T]
   (implicit k: Know[A, T, DerivationState[R, V, I]], fn: FuncName) = Derive[A[T], R, V, I] { a => ds0 =>

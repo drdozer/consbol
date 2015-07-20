@@ -45,7 +45,8 @@ object Model {
 }
 
 
-case class IndexModel[I](at: Map[I, Set[Int]] = Map.empty[I, Set[Int]])
+case class IndexModel[I](at: Map[I, Set[Int]] = Map.empty[I, Set[Int]],
+                         suc: Set[(I, I)] = Set.empty[(I, I)])
 
 case class InterpModel[V, I](v2i: Map[V, I] = Map.empty[V, I],
                              eq: Map[I, Set[V]] = Map.empty[I, Set[V]])

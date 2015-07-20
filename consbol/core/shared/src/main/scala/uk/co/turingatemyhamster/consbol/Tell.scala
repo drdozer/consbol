@@ -61,9 +61,13 @@ trait TellOrdModel {
 trait TellLocationModel {
 
   implicit def tell_at[I]: Tell[AT[I], IndexModel[I]] = new Tell[AT[I], IndexModel[I]] {
-    override def apply(a: AT[I], m: IndexModel[I]): IndexModel[I] = {
+    override def apply(a: AT[I], m: IndexModel[I]): IndexModel[I] =
       m.copy(at = m.at + (a.point -> (m.at.getOrElse(a.point, Set()) + a.loc)))
-    }
+  }
+
+  implicit def tell_suc[I]: Tell[Suc[I], IndexModel[I]] = new Tell[Suc[I], IndexModel[I]] {
+    override def apply(a: Suc[I], m: IndexModel[I]): IndexModel[I] =
+      m.copy(suc = m.suc + (a.lhs -> a.rhs))
   }
 
 }

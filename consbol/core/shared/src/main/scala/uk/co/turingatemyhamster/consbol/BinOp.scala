@@ -24,6 +24,9 @@ object BinOp {
   implicit def binop_notGtEq[T] = BinOp[NOT_GT_EQ, T](NOT_GT_EQ.apply, NOT_GT_EQ.unapply)
   implicit def binop_notGt[T] = BinOp[NOT_GT, T](NOT_GT.apply, NOT_GT.unapply)
 
+  implicit def binop_suc[T] = BinOp[Suc, T](Suc.apply, Suc.unapply)
+  implicit def binop_pre[T] = BinOp[Pre, T](Pre.apply, Pre.unapply)
+
   implicit def binop_shorterThan[T] = BinOp[ShorterThan, T](ShorterThan.apply, ShorterThan.unapply)
   implicit def binop_notLongerThan[T] = BinOp[NotLongerThan, T](NotLongerThan.apply, NotLongerThan.unapply)
   implicit def binop_notShorterThan[T] = BinOp[NotShorterThan, T](NotShorterThan.apply, NotShorterThan.unapply)

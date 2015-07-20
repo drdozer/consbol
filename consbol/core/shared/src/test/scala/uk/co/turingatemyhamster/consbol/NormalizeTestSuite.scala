@@ -21,6 +21,13 @@ object NormalizeTestSuite extends TestSuite {
       'not_gt - assert(NOT_GT('a, 'b).normalize == LT_EQ('a, 'b))
     }
 
+    'index - {
+
+      'suc - assert(Suc('a, 'b).normalize == Suc('a, 'b))
+      'pre - assert(Pre('a, 'b).normalize == Suc('b, 'a))
+
+    }
+
     'strand - {
 
       'same_strand_as - assert(SameStrandAs('r, 's).normalize == SameStrandAs('r, 's))

@@ -14,3 +14,5 @@ case class NOT_GT_EQ[T](lhs: T, rhs: T)
 case class NOT_GT[T](lhs: T, rhs: T)
 
 case class AT[T](point: T, loc: Int)
+case class Suc[T](lhs: T, rhs: T)
+case class Pre[T](lhs: T, rhs: T)

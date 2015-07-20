@@ -97,6 +97,23 @@ object KnowTestSuite extends TestSuite {
         'got_no_result_12 - assert(ka_12.filter(_.isRight).isEmpty.value)
       }
 
+      'suc - {
+
+        'implicits - {
+          implicitly[Know[Suc, String, IndexModel[String]]]
+          implicitly[Know[Suc, String, Model[Symbol, Symbol, String]]]
+          implicitly[Know[Suc, Symbol, Model[Symbol, Symbol, String]]]
+        }
+
+        val m1 = m0 tell Suc('a, 'b)
+
+        val k = m1 know Suc('a, 'b)
+
+        'got_result - assert(!k.isEmpty.value)
+        'got_right_result - assert(checkResult(k, Suc('a, 'b)))
+
+      }
+
       'strand - {
 
         'implicits - {

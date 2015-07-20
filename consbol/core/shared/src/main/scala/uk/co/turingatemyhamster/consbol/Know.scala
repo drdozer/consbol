@@ -182,6 +182,24 @@ trait KnowIndexModel {
       StreamT.empty
   }
 
+  implicit def know_suc[I](implicit fn: FuncName)
+  : Know[Suc, I, IndexModel[I]] = new Know[Suc, I, IndexModel[I]] {
+    override def byLHS(lhs: I, m0: IndexModel[I]): TrueStream[DProof[Suc[I]]] =
+      TrueStream(m0.suc.filter(_._1 == lhs) map (ii => DProof.fact(Suc(ii._1, ii._2))))
+
+    override def byRHS(rhs: I, m0: IndexModel[I]): TrueStream[DProof[Suc[I]]] =
+      TrueStream(m0.suc.filter(_._2 == rhs) map (ii => DProof.fact(Suc(ii._1, ii._2))))
+
+    override def apply(a: Suc[I], m0: IndexModel[I]): TrueStream[DProof[Suc[I]]] =
+      StreamT apply Need {
+        if(m0.suc(a.lhs -> a.rhs))
+          singleton(DProof.fact(a))
+        else
+          singleton(Disproof.failure(a))
+      }
+  }
+
+
 }
 
 trait KnowStrandModel {
