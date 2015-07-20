@@ -11,8 +11,9 @@ trait Tell[A, M] {
 
 object Tell
   extends TellOrdModel
-  with TellLocationModel
+  with TellIndexModel
   with TellStrandModel
+  with TellLengthModel
   with TellLowPriorityImplicits
   with TellLowLowPriorityImplicits
 {
@@ -58,7 +59,7 @@ trait TellOrdModel {
 
 }
 
-trait TellLocationModel {
+trait TellIndexModel {
 
   implicit def tell_at[I]: Tell[AT[I], IndexModel[I]] = new Tell[AT[I], IndexModel[I]] {
     override def apply(a: AT[I], m: IndexModel[I]): IndexModel[I] =
@@ -69,7 +70,6 @@ trait TellLocationModel {
     override def apply(a: Suc[I], m: IndexModel[I]): IndexModel[I] =
       m.copy(suc = m.suc + (a.lhs -> a.rhs))
   }
-
 }
 
 trait TellStrandModel {
@@ -88,6 +88,15 @@ trait TellStrandModel {
     override def apply(a: DifferentStrandTo[R], m: StrandModel[R]): StrandModel[R] =
       m.copy(different_strand_to = m.different_strand_to + (a.lhs -> a.rhs))
   }
+}
+
+trait TellLengthModel {
+
+  implicit def tell_length[R]: Tell[Length[R], LengthModel[R]] = new Tell[Length[R], LengthModel[R]] {
+    override def apply(a: Length[R], m: LengthModel[R]): LengthModel[R] =
+      m.copy(length = m.length + (a.point -> (m.length.getOrElse(a.point, Set()) + a.length)))
+  }
+
 }
 
 trait TellLowPriorityImplicits {
@@ -109,6 +118,12 @@ trait TellLowPriorityImplicits {
   (implicit t: Tell[A[R], StrandModel[R]]): Tell[A[R], Model[R, V, I]] = new Tell[A[R], Model[R, V, I]] {
     override def apply(a: A[R], m: Model[R, V, I]): Model[R, V, I] =
       m.copy(str = m.str tell a)
+  }
+
+  implicit def tell_usingLengthModel[A[_], R, V, I]
+  (implicit t: Tell[A[R], LengthModel[R]]): Tell[A[R], Model[R, V, I]] = new Tell[A[R], Model[R, V, I]] {
+    override def apply(a: A[R], m: Model[R, V, I]): Model[R, V, I] =
+      m.copy(length = m.length tell a)
   }
 
 }

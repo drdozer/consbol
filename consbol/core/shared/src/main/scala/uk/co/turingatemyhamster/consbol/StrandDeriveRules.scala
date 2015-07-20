@@ -1,7 +1,6 @@
 package uk.co.turingatemyhamster.consbol
 
 
-import Derive._
 import uk.co.turingatemyhamster.consbol.util.FuncName
 import uk.co.turingatemyhamster.consbol.util.FuncNameUtils._
 

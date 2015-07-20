@@ -9,7 +9,8 @@ import Interpretation._
 case class Model[R, V, I](i: InterpModel[V, I],
                           ord: OrdModel[I],
                           index: IndexModel[I],
-                          str: StrandModel[R])
+                          str: StrandModel[R],
+                          length: LengthModel[R])
 {
 
   def merge(a: V, b: V)
@@ -41,9 +42,9 @@ object Model {
     i = InterpModel(),
     ord = OrdModel(),
     index = IndexModel(),
-    str = StrandModel())
+    str = StrandModel(),
+    length = LengthModel())
 }
-
 
 case class IndexModel[I](at: Map[I, Set[Int]] = Map.empty[I, Set[Int]],
                          suc: Set[(I, I)] = Set.empty[(I, I)])
@@ -58,3 +59,5 @@ case class OrdModel[I](lt: Set[(I, I)] = Set.empty[(I, I)],
 case class StrandModel[R](strand: Map[R, Set[Orientation]] = Map.empty[R, Set[Orientation]],
                           same_strand_as: Set[(R, R)] = Set.empty[(R, R)],
                           different_strand_to: Set[(R, R)] = Set.empty[(R, R)])
+
+case class LengthModel[R](length: Map[R, Set[Int]] = Map.empty[R, Set[Int]])

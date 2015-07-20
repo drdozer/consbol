@@ -1,5 +1,6 @@
 package uk.co.turingatemyhamster.consbol
 
+import scala.language.higherKinds
 import scalaz.{Need, StreamT}
 
 
@@ -60,8 +61,7 @@ object Interpretation {
       m.i coimage a
   }
 
-  // fixme: should this be against InterpModel rather than Model?
-  implicit def opInterpolation[A[_], R, V, I]
+  implicit def binOpInterpolation[A[_], R, V, I]
   (implicit vOp: BinOp[A, V], iOp: BinOp[A, I], viI: Interpretation[V, I, Model[R, V, I]])
   : Interpretation[A[V], A[I], Model[R, V, I]] = new Interpretation[A[V], A[I], Model[R, V, I]]
   {
@@ -81,17 +81,21 @@ object Interpretation {
     }
   }
 
-  // fixme: should this be against InterpModel rather than Model?
-  implicit def atInterpretation[R, V, I]
-  (implicit viI: Interpretation[V, I, Model[R, V, I]])
-  : Interpretation[AT[V], AT[I], Model[R, V, I]] = new Interpretation[AT[V], AT[I], Model[R, V, I]] {
-    override def apply(a: AT[V], m0: Model[R, V, I]): (AT[I], Model[R, V, I]) = {
-      val (pointI, m1) = m0 interpretation a.point
-      AT(pointI, a.loc) -> m1
+  implicit def monOpInterpretation[A[_], X, R, V, I]
+  (implicit vOp: MonOp[A, V, X], iOp: MonOp[A, I, X], viI: Interpretation[V, I, Model[R, V, I]])
+  : Interpretation[A[V], A[I], Model[R, V, I]] = new Interpretation[A[V], A[I], Model[R, V, I]] {
+    override def apply(a: A[V], m0: Model[R, V, I]): (A[I], Model[R, V, I]) = {
+      val (lhsV, x) = vOp decompose a
+      val (lhsI, m1) = m0 interpretation lhsV
+      iOp.recompose(lhsI, x) -> m1
     }
 
-    override def unapply(a: AT[I], m: Model[R, V, I]): Option[AT[V]] =
-      m coimage a.point map (pV => AT(pV, a.loc))
+    override def unapply(a: A[I], m: Model[R, V, I]): Option[A[V]] = {
+      val (lhsI, x) = iOp decompose a
+      for {
+        lhsV <- m coimage lhsI
+      } yield vOp.recompose(lhsV, x)
+    }
   }
 }
 

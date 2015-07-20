@@ -28,7 +28,8 @@ object Unifier {
         i = iU(aI, bI, uI, m.i),
         ord = ordU(aI, bI, uI, m.ord),
         index = indexU(aI, bI, uI, m.index),
-        str = m.str)
+        str = m.str,
+        length = m.length)
   }
 
   implicit def interpretationUnifier[V, I]: Unifier[I, InterpModel[V, I]] = new Unifier[I, InterpModel[V, I]] {

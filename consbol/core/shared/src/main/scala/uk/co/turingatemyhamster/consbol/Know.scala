@@ -4,9 +4,8 @@ import uk.co.turingatemyhamster.consbol.Derive.DProof
 import uk.co.turingatemyhamster.consbol.util.FuncName
 
 import scala.language.higherKinds
-import scalaz.StreamT.Done
-import scalaz._
-import Scalaz._
+import scalaz.Scalaz._
+import scalaz.{StreamT, Need}
 
 trait KnowValue[A, V, M] {
   def apply(v: V, m0: M): TrueStream[A]
@@ -44,6 +43,7 @@ object Know
   extends KnowOrdModel
   with KnowIndexModel
   with KnowStrandModel
+  with KnowLengthModel
   with KnowLowPriorityImplicits
   with KnowLowLowPriorityImplicits
 {
@@ -142,7 +142,7 @@ trait KnowOrdModel {
         if(m0.eq.contains(lhs))
           singleton(DProof.fact(EQ(lhs, lhs)))
         else
-          Done
+          StreamT.Done
       }
 
     override def byRHS(rhs: I, m0: InterpModel[V, I]): TrueStream[DProof[EQ[I]]] =
@@ -150,7 +150,7 @@ trait KnowOrdModel {
         if(m0.eq.contains(rhs))
           singleton(DProof.fact(EQ(rhs, rhs)))
         else
-          Done
+          StreamT.Done
       }
   }
 
@@ -198,8 +198,6 @@ trait KnowIndexModel {
           singleton(Disproof.failure(a))
       }
   }
-
-
 }
 
 trait KnowStrandModel {
@@ -286,76 +284,80 @@ trait KnowStrandModel {
   }
 }
 
+trait KnowLengthModel {
+
+  implicit def know_length[R](implicit fn: FuncName)
+  : Know[Length, R, LengthModel[R]] = new Know[Length, R, LengthModel[R]] {
+    override def apply(a: Length[R], m0: LengthModel[R]): TrueStream[DProof[Length[R]]] =
+      StreamT apply Need {
+        m0.length.get(a.point) match {
+          case Some(ls) if ls contains a.length =>
+            singleton(DProof.fact(a))
+          case _ =>
+            singleton(Disproof.failure(a))
+        }
+      }
+
+    override def byLHS(lhs: R, m0: LengthModel[R]): TrueStream[DProof[Length[R]]] =
+      m0.length.get(lhs) match {
+        case Some(ls) =>
+          TrueStream(ls map (len => DProof.fact(Length(lhs, len))))
+        case None =>
+          StreamT.empty
+      }
+
+    override def byRHS(rhs: R, m0: LengthModel[R]): TrueStream[DProof[Length[R]]] =
+      StreamT.empty
+  }
+}
+
 trait KnowLowPriorityImplicits {
   
   import Know.KnowOps
 
+  def knowFrom[A[_], T, M0, M1]
+  (f: M0 => M1)
+  (implicit k: Know[A, T, M1])
+  : Know[A, T, M0] = new Know[A, T, M0] {
+    override def byLHS(lhs: T, m0: M0): TrueStream[DProof[A[T]]] =
+      k.byLHS(lhs, f(m0))
+
+    override def byRHS(rhs: T, m0: M0): TrueStream[DProof[A[T]]] =
+      k.byRHS(rhs, f(m0))
+
+    override def apply(a: A[T], m0: M0): TrueStream[DProof[A[T]]] =
+      k(a, f(m0))
+  }
+
   implicit def know_dsFromModel[A[_], T, R, V, I]
   (implicit k: Know[A, T, Model[R, V, I]])
-  : Know[A, T, DerivationState[R, V, I]] = new Know[A, T, DerivationState[R, V, I]] {
-    override def byLHS(lhs: T, ds0: DerivationState[R, V, I]): TrueStream[DProof[A[T]]] =
-      ds0.m0.knowLHS[A, T](lhs)
-
-
-    override def byRHS(rhs: T, ds0: DerivationState[R, V, I]): TrueStream[DProof[A[T]]] =
-      ds0.m0.knowRHS[A, T](rhs)
-
-    override def apply(a: A[T], ds0: DerivationState[R, V, I]): TrueStream[DProof[A[T]]] =
-      ds0.m0 know a
-  }
+  : Know[A, T, DerivationState[R, V, I]] =
+    knowFrom(_.m0)
 
   implicit def know_modelFromInterp[A[_], R, V, I]
   (implicit k: Know[A, I, InterpModel[V, I]])
-  : Know[A, I, Model[R, V, I]] = new Know[A, I, Model[R, V, I]] {
-    override def apply(a: A[I], m0: Model[R, V, I]): TrueStream[DProof[A[I]]] =
-      m0.i know a
-
-    override def byLHS(lhs: I, m0: Model[R, V, I]): TrueStream[DProof[A[I]]] =
-      m0.i knowLHS lhs
-
-    override def byRHS(rhs: I, m0: Model[R, V, I]): TrueStream[DProof[A[I]]] =
-      m0.i knowRHS rhs
-  }
+  : Know[A, I, Model[R, V, I]] =
+    knowFrom(_.i)
 
   implicit def know_modelFromOrd[A[_], R, V, I]
   (implicit k: Know[A, I, OrdModel[I]])
-  : Know[A, I, Model[R, V, I]] = new Know[A, I, Model[R, V, I]] {
-    override def apply(a: A[I], m0: Model[R, V, I]): TrueStream[DProof[A[I]]] =
-      m0.ord know a
-
-    override def byLHS(lhs: I, m0: Model[R, V, I]): TrueStream[DProof[A[I]]] =
-      m0.ord knowLHS lhs
-
-    override def byRHS(rhs: I, m0: Model[R, V, I]): TrueStream[DProof[A[I]]] =
-      m0.ord knowRHS rhs
-  }
+  : Know[A, I, Model[R, V, I]] =
+    knowFrom(_.ord)
 
   implicit def know_modelFromIndex[A[_], R, V, I]
   (implicit k: Know[A, I, IndexModel[I]])
-  : Know[A, I, Model[R, V, I]] = new Know[A, I, Model[R, V, I]] {
-    override def apply(a: A[I], m0: Model[R, V, I]): TrueStream[DProof[A[I]]] =
-      m0.index know a
-
-    override def byLHS(lhs: I, m0: Model[R, V, I]): TrueStream[DProof[A[I]]] =
-      m0.index knowLHS lhs
-
-    override def byRHS(rhs: I, m0: Model[R, V, I]): TrueStream[DProof[A[I]]] =
-      m0.index knowRHS rhs
-  }
+  : Know[A, I, Model[R, V, I]] =
+    knowFrom(_.index)
 
   implicit def know_modelFromStrand[A[_], R, V, I]
   (implicit k: Know[A, R, StrandModel[R]])
-  : Know[A, R, Model[R, V, I]] = new Know[A, R, Model[R, V, I]] {
-    override def apply(a: A[R], m0: Model[R, V, I]): TrueStream[DProof[A[R]]] =
-      m0.str know a
+  : Know[A, R, Model[R, V, I]] =
+    knowFrom(_.str)
 
-    override def byLHS(lhs: R, m0: Model[R, V, I]): TrueStream[DProof[A[R]]] =
-      m0.str knowLHS lhs
-
-    override def byRHS(rhs: R, m0: Model[R, V, I]): TrueStream[DProof[A[R]]] =
-      m0.str knowRHS rhs
-  }
-
+  implicit def know_modelFromLength[A[_], R, V, I]
+  (implicit k: Know[A, R, LengthModel[R]])
+  : Know[A, R, Model[R, V, I]] =
+    knowFrom(_.length)
 }
 
 trait KnowLowLowPriorityImplicits {

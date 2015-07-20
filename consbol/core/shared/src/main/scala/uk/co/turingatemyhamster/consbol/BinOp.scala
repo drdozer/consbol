@@ -75,3 +75,21 @@ trait BinOp[O[_], T] {
   def decompose(o: O[T]): (T, T)
   def recompose(tt: (T, T)): O[T]
 }
+
+object MonOp {
+
+  def apply[O[_], T, X](r: (T, X) => O[T], d: O[T] => Option[(T, X)]): MonOp[O, T, X] = new MonOp[O, T, X] {
+    override def recompose(tt: (T, X)): O[T] = r.tupled(tt)
+
+    override def decompose(o: O[T]): (T, X) = d(o).get
+  }
+
+  implicit def monop_strand[T]: MonOp[Strand, T, Orientation] = MonOp[Strand, T, Orientation](Strand.apply, Strand.unapply)
+  implicit def monop_at[T]: MonOp[AT, T, Int] = MonOp[AT, T, Int](AT.apply, AT.unapply)
+  implicit def monop_length[T]: MonOp[Length, T, Int] = MonOp[Length, T, Int](Length.apply, Length.unapply)
+}
+
+trait MonOp[O[_], T, X] {
+  def decompose(o: O[T]): (T, X)
+  def recompose(tx: (T, X)): O[T]
+}

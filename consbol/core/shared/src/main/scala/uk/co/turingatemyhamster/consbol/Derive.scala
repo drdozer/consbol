@@ -320,6 +320,7 @@ trait DeriveRules[R, V, I]
   extends OrdDeriveRules[R, V, I]
   with IndexDeriveRules[R, V, I]
   with StrandDeriveRules[R, V, I]
+  with LengthDeriveRules[R, V, I]
   with DeriveDSL[R, V, I]
 
 object DeriveRules {
@@ -345,10 +346,12 @@ case class DeriveEnv[R, V, I](rules: DeriveRules[R, V, I],
                               derives_Suc: List[Derive[Suc[I], R, V, I]],
                               derives_SameStrandAs: List[Derive[SameStrandAs[R], R, V, I]],
                               derives_DifferentStrandTo: List[Derive[DifferentStrandTo[R], R, V, I]],
-                              derives_Strand: List[Derive[Strand[R], R, V, I]])
+                              derives_Strand: List[Derive[Strand[R], R, V, I]],
+                              derives_Length: List[Derive[Length[R], R, V, I]])
   extends OrdDeriveEnv[R, V, I]
   with IndexDeriveEnv[R, V, I]
   with StrandDeriveEnv[R, V, I]
+  with LengthDeriveEnv[R, V, I]
   with DeriveEnvBase[R, V, I]
 
 object DeriveEnv {
@@ -414,6 +417,10 @@ object DeriveEnv {
       rules.`±r -| k(±r)` ::
         rules.`±r -| ∃s: ±s. r±s` ::
         rules.`±r -| ∃s: ∓s, r∓s` ::
-        Nil
+        Nil,
+
+    derives_Length =
+      rules.`Length r -| k(Length r)` ::
+      Nil
   )
 }
