@@ -9,6 +9,7 @@ import Interpretation._
 case class Model[R, V, I](i: InterpModel[V, I],
                           ord: OrdModel[I],
                           index: IndexModel[I],
+                          range: RangeModel[R, V],
                           str: StrandModel[R],
                           length: LengthModel[R])
 {
@@ -42,6 +43,7 @@ object Model {
     i = InterpModel(),
     ord = OrdModel(),
     index = IndexModel(),
+    range = RangeModel(),
     str = StrandModel(),
     length = LengthModel())
 }
@@ -61,3 +63,5 @@ case class StrandModel[R](strand: Map[R, Set[Orientation]] = Map.empty[R, Set[Or
                           different_strand_to: Set[(R, R)] = Set.empty[(R, R)])
 
 case class LengthModel[R](length: Map[R, Set[Int]] = Map.empty[R, Set[Int]])
+
+case class RangeModel[R, V](rangeAs: Map[R, Set[(V, V)]] = Map.empty[R, Set[(V, V)]])

@@ -165,6 +165,22 @@ object KnowTestSuite extends TestSuite {
         }
       }
 
+      'range - {
+        'rangeAs - {
+          'implicits - {
+            implicitly[Know[RangeAs, Symbol, RangeModel[Symbol, Symbol]]]
+            implicitly[Know[RangeAs, Symbol, Model[Symbol, Symbol, String]]] //(Know.know_modelFromRange[RangeAs.Helper[Symbol]#l, Symbol, Symbol, String])
+            implicitly[Know[RangeAs, Symbol, DerivationState[Symbol, Symbol, String]]] //(Know.know_dsFromModel[RangeAs.Helper[Symbol]#l, Symbol, Symbol, Symbol, String])
+          }
+
+          val m1 = m0 tell RangeAs('r, 'a, 'b)
+          val k = m1 know RangeAs('r, 'a, 'b)
+
+          'got_result - assert(!k.isEmpty.value)
+          'got_right_result - assert(checkResult(k, RangeAs('r, 'a, 'b)))
+        }
+      }
+
       'length - {
 
         'length - {
@@ -176,7 +192,6 @@ object KnowTestSuite extends TestSuite {
           }
 
           val m1 = m0 tell Length('a, 100)
-
           val k = m1 know Length('a, 100)
 
           'got_result - assert(!k.isEmpty.value)

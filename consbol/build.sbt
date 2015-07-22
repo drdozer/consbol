@@ -30,6 +30,7 @@ lazy val coreJS = core.js.settings(
   )
 
 lazy val coreJVM = core.jvm.settings(
+//  scalacOptions += "-Xlog-implicits",
   libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.3"
   )
 

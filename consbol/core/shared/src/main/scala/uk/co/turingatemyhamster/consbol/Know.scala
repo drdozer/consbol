@@ -44,6 +44,7 @@ object Know
   with KnowIndexModel
   with KnowStrandModel
   with KnowLengthModel
+  with KnowRangeModel
   with KnowLowPriorityImplicits
   with KnowLowLowPriorityImplicits
 {
@@ -284,6 +285,30 @@ trait KnowStrandModel {
   }
 }
 
+trait KnowRangeModel {
+
+  implicit def know_rangeAs[T](implicit fn: FuncName)
+  : Know[RangeAs, T, RangeModel[T, T]] = new Know[RangeAs, T, RangeModel[T, T]] {
+    override def byLHS(lhs: T, m0: RangeModel[T, T]): TrueStream[DProof[RangeAs[T]]] =
+      TrueStream(
+        m0.rangeAs.filter(_._1 == lhs) flatMap {
+          case(r, abs) => abs map { case (a, b) => DProof.fact(RangeAs(r, a, b)) }
+        }
+      )
+    
+    override def byRHS(rhs: T, m0: RangeModel[T, T]): TrueStream[DProof[RangeAs[T]]] =
+      StreamT.empty
+
+    override def apply(a: RangeAs[T], m0: RangeModel[T, T]): TrueStream[DProof[RangeAs[T]]] =
+      TrueStream(
+        for {
+          r <- m0.rangeAs.keys
+          (a, b) <- m0.rangeAs(r)
+        } yield DProof.fact(RangeAs(r, a, b))
+      )
+  }
+}
+
 trait KnowLengthModel {
 
   implicit def know_length[R](implicit fn: FuncName)
@@ -358,6 +383,11 @@ trait KnowLowPriorityImplicits {
   (implicit k: Know[A, R, LengthModel[R]])
   : Know[A, R, Model[R, V, I]] =
     knowFrom(_.length)
+
+  implicit def know_modelFromRange[A[_], T, I]
+  (implicit k: Know[A, T, RangeModel[T, T]])
+  : Know[A, T, Model[T, T, I]] =
+    knowFrom(_.range)
 }
 
 trait KnowLowLowPriorityImplicits {

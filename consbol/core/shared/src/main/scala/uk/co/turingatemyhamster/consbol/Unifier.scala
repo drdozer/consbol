@@ -22,12 +22,14 @@ object Unifier {
   (implicit
    iU: Unifier[I, InterpModel[V, I]],
    ordU: Unifier[I, OrdModel[I]],
-   indexU: Unifier[I, IndexModel[I]]): Unifier[I, Model[R, V, I]] = new Unifier[I, Model[R, V, I]] {
+   indexU: Unifier[I, IndexModel[I]])
+  : Unifier[I, Model[R, V, I]] = new Unifier[I, Model[R, V, I]] {
     override def apply(aI: I, bI: I, uI: I, m: Model[R, V, I]): Model[R, V, I] =
       Model(
         i = iU(aI, bI, uI, m.i),
         ord = ordU(aI, bI, uI, m.ord),
         index = indexU(aI, bI, uI, m.index),
+        range = m.range,
         str = m.str,
         length = m.length)
   }
@@ -60,6 +62,14 @@ object Unifier {
 
       IndexModel(
         at = m.at - aI - bI + (uI -> suI))
+    }
+  }
+
+  implicit def rangeModelUnifier[R, I]: Unifier[I, RangeModel[R, I]] = new Unifier[I, RangeModel[R, I]] {
+    override def apply(aI: I, bI: I, uI: I, m: RangeModel[R, I]): RangeModel[R, I] = {
+      RangeModel(
+        rangeAs = m.rangeAs
+      )
     }
   }
 }

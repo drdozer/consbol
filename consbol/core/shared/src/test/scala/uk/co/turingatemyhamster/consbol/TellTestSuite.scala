@@ -173,14 +173,27 @@ object TellTestSuite extends TestSuite {
             implicitly[Tell[Length[Symbol], DerivationState[Symbol, Symbol, String]]]
           }
 
-          val m1 = m0 tell Length('a, 100)
+          val m1 = m0 tell Length('r, 100)
 
-          assert(m1.length.length('a) contains 100)
+          assert(m1.length.length('r) contains 100)
         }
 
+      }
+
+      'range - {
+
+        'implicits - {
+          implicitly[Tell[RangeAs[Symbol], RangeModel[Symbol, Symbol]]]
+          implicitly[Tell[RangeAs[Symbol], Model[Symbol, Symbol, String]]]
+          implicitly[Tell[RangeAs[Symbol], DerivationState[Symbol, Symbol, String]]]
+        }
+
+        val m1 = m0 tell RangeAs('r, 'a, 'b)
+
+        assert(m1.range.rangeAs('r) contains ('a, 'b))
       }
     }
 
   }
-  
+
 }

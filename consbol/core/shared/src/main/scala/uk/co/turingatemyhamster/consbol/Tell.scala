@@ -14,6 +14,7 @@ object Tell
   with TellIndexModel
   with TellStrandModel
   with TellLengthModel
+  with TellRangeModel
   with TellLowPriorityImplicits
   with TellLowLowPriorityImplicits
 {
@@ -94,7 +95,18 @@ trait TellLengthModel {
 
   implicit def tell_length[R]: Tell[Length[R], LengthModel[R]] = new Tell[Length[R], LengthModel[R]] {
     override def apply(a: Length[R], m: LengthModel[R]): LengthModel[R] =
-      m.copy(length = m.length + (a.point -> (m.length.getOrElse(a.point, Set()) + a.length)))
+      m.copy(length = m.length +
+        (a.point -> (m.length.getOrElse(a.point, Set()) + a.length)))
+  }
+
+}
+
+trait TellRangeModel {
+
+  implicit def tell_rangeAs[T]: Tell[RangeAs[T], RangeModel[T, T]] = new Tell[RangeAs[T], RangeModel[T, T]] {
+    override def apply(a: RangeAs[T], m: RangeModel[T, T]): RangeModel[T, T] =
+      m.copy(rangeAs = m.rangeAs +
+        (a.range -> (m.rangeAs.getOrElse(a.range, Set()) + (a.lower -> a.upper))))
   }
 
 }
@@ -126,6 +138,11 @@ trait TellLowPriorityImplicits {
       m.copy(length = m.length tell a)
   }
 
+  implicit def tell_usingRangeModel[A[_], T, I]
+  (implicit t: Tell[A[T], RangeModel[T, T]]): Tell[A[T], Model[T, T, I]] = new Tell[A[T], Model[T, T, I]] {
+    override def apply(a: A[T], m: Model[T, T, I]): Model[T, T, I] =
+      m.copy(range = m.range tell a)
+  }
 }
 
 trait TellLowLowPriorityImplicits {
