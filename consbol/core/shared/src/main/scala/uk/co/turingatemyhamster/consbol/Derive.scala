@@ -1,5 +1,6 @@
 package uk.co.turingatemyhamster.consbol
 
+import monocle.macros.Lenses
 import uk.co.turingatemyhamster.consbol.util.FuncName
 
 import scala.language.higherKinds
@@ -9,6 +10,8 @@ import scalaz.Scalaz._
 import Derive._
 import Tell.TellOps
 
+
+@Lenses
 case class DerivationState[R, V, I](env: DeriveEnv[R, V, I],
                                     cuts: Set[Any] = Set.empty,
                                     refuted: Map[Set[Any], Set[Any]] = Map.empty,

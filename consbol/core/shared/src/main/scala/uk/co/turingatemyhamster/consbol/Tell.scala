@@ -24,15 +24,19 @@ object Tell
     def tell[A](a: A)(implicit t: Tell[A, M]): M = t(a, m)
   }
 
-  def tell_binops[A[_], T, M](l: Lens[M, Set[(T, T)]])(implicit op: BinOp[A, T]): Tell[A[T], M] = new Tell[A[T], M] {
-    override def apply(a: A[T], m: M): M =
-      l.modify(_ + op.decompose(a))(m)
+  def tell_on[A, M1, M2](φ: Lens[M1, M2])(implicit t: Tell[A, M2]) = new Tell[A, M1] {
+    override def apply(a: A, m: M1): M1 = φ.modify(t(a, _))(m)
   }
 
-  def tell_monops[A[_], T, U, M](l: Lens[M, Map[T, Set[U]]])(implicit op: MonOp[A, T, U]): Tell[A[T], M] = new Tell[A[T], M] {
+  def tell_binops[A[_], T, M](φ: Lens[M, Set[(T, T)]])(implicit op: BinOp[A, T]): Tell[A[T], M] = new Tell[A[T], M] {
+    override def apply(a: A[T], m: M): M =
+      φ.modify(_ + op.decompose(a))(m)
+  }
+
+  def tell_monops[A[_], T, U, M](φ: Lens[M, Map[T, Set[U]]])(implicit op: MonOp[A, T, U]): Tell[A[T], M] = new Tell[A[T], M] {
     override def apply(a: A[T], m: M): M = {
       val (t, u) = op.decompose(a)
-      l.modify(m0 => m0 + (t -> (m0.getOrElse(t, Set()) + u)))(m)
+      φ.modify(m0 => m0 + (t -> (m0.getOrElse(t, Set()) + u)))(m)
     }
   }
 }
@@ -109,35 +113,21 @@ trait TellRangeModel {
 trait TellLowPriorityImplicits {
   import Tell.TellOps
 
-  implicit def tell_usingOrdModel[A[_], R, V, I]
-  (implicit t: Tell[A[I], OrdModel[I]]): Tell[A[I], Model[R, V, I]] = new Tell[A[I], Model[R, V, I]] {
-    override def apply(a: A[I], m: Model[R, V, I]): Model[R, V, I] =
-      m.copy(ord = m.ord tell a)
-  }
+  implicit def tell_usingOrdModel[A[_], R, V, I](implicit t: Tell[A[I], OrdModel[I]]) =
+    Tell.tell_on[A[I], Model[R, V, I], OrdModel[I]](Model.ord)
 
-  implicit def tell_usingIndexModel[A[_], R, V, I]
-  (implicit t: Tell[A[I], IndexModel[I]]): Tell[A[I], Model[R, V, I]] = new Tell[A[I], Model[R, V, I]] {
-    override def apply(a: A[I], m: Model[R, V, I]): Model[R, V, I] =
-      m.copy(index = m.index tell a)
-  }
+  implicit def tell_usingIndexModel[A[_], R, V, I](implicit t: Tell[A[I], IndexModel[I]]) =
+    Tell.tell_on[A[I], Model[R, V, I], IndexModel[I]](Model.index)
 
-  implicit def tell_usingStrandModel[A[_], R, V, I]
-  (implicit t: Tell[A[R], StrandModel[R]]): Tell[A[R], Model[R, V, I]] = new Tell[A[R], Model[R, V, I]] {
-    override def apply(a: A[R], m: Model[R, V, I]): Model[R, V, I] =
-      m.copy(str = m.str tell a)
-  }
+  implicit def tell_usingStrandModel[A[_], R, V, I](implicit t: Tell[A[R], StrandModel[R]]) =
+    Tell.tell_on[A[R], Model[R, V, I], StrandModel[R]](Model.str)
 
-  implicit def tell_usingLengthModel[A[_], R, V, I]
-  (implicit t: Tell[A[R], LengthModel[R]]): Tell[A[R], Model[R, V, I]] = new Tell[A[R], Model[R, V, I]] {
-    override def apply(a: A[R], m: Model[R, V, I]): Model[R, V, I] =
-      m.copy(length = m.length tell a)
-  }
+  implicit def tell_usingLengthModel[A[_], R, V, I](implicit t: Tell[A[R], LengthModel[R]]) =
+    Tell.tell_on[A[R], Model[R, V, I], LengthModel[R]](Model.length)
 
-  implicit def tell_usingRangeModel[A[_], T, I]
-  (implicit t: Tell[A[T], RangeModel[T, T]]): Tell[A[T], Model[T, T, I]] = new Tell[A[T], Model[T, T, I]] {
-    override def apply(a: A[T], m: Model[T, T, I]): Model[T, T, I] =
-      m.copy(range = m.range tell a)
-  }
+  implicit def tell_usingRangeModel[A[_], T, I](implicit t: Tell[A[T], RangeModel[T, T]]) =
+    Tell.tell_on[A[T], Model[T, T, I], RangeModel[T, T]](Model.range)
+
 }
 
 trait TellLowLowPriorityImplicits {
@@ -153,11 +143,7 @@ trait TellLowLowPriorityImplicits {
   }
 
   implicit def tell_ds[A, R, V, I]
-  (implicit t: Tell[A, Model[R, V, I]])
-  : Tell[A, DerivationState[R, V, I]] = new Tell[A, DerivationState[R, V, I]] {
-    override def apply(a: A, ds0: DerivationState[R, V, I]): DerivationState[R, V, I] = {
-      ds0 withModel (ds0.m0 tell a)
-    }
-  }
+  (implicit t: Tell[A, Model[R, V, I]]) =
+    Tell.tell_on[A, DerivationState[R, V, I], Model[R, V, I]](DerivationState.m0)
 
 }

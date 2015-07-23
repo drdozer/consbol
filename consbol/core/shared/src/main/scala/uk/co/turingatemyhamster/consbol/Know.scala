@@ -1,5 +1,6 @@
 package uk.co.turingatemyhamster.consbol
 
+import monocle.Lens
 import uk.co.turingatemyhamster.consbol.Derive.DProof
 import uk.co.turingatemyhamster.consbol.util.FuncName
 
@@ -7,8 +8,8 @@ import scala.language.higherKinds
 import scalaz.Scalaz._
 import scalaz.{StreamT, Need}
 
-trait KnowValue[A, V, M] {
-  def apply(v: V, m0: M): TrueStream[A]
+trait KnowValue[A, T, M] {
+  def apply(t: T, m0: M): TrueStream[A]
 }
 
 object KnowValue extends KnowValueLowPriorityImplicits {
@@ -60,75 +61,71 @@ object Know
       k.byRHS(rhs, m)
   }
 
+  def know_on[A[_], T, M1, M2](φ: Lens[M1, M2])(implicit k: Know[A, T, M2]) = new Know[A, T, M1] {
+    override def apply(a: A[T], m0: M1): TrueStream[DProof[A[T]]] = k(a, φ.get(m0))
+
+    override def byLHS(lhs: T, m0: M1): TrueStream[DProof[A[T]]] = k.byLHS(lhs, φ.get(m0))
+
+    override def byRHS(rhs: T, m0: M1): TrueStream[DProof[A[T]]] = k.byRHS(rhs, φ.get(m0))
+  }
+
+  def know_binop[A[_], T, M](φ: Lens[M, Set[(T, T)]])(implicit op: BinOp[A, T], fn: FuncName) = new Know[A, T, M] {
+    override def apply(a: A[T], m0: M): TrueStream[DProof[A[T]]] =
+      StreamT apply Need {
+        if(φ get m0 contains (op decompose a))
+          singleton(DProof.fact(a))
+        else
+          singleton(Disproof.failure(a))
+      }
+
+    override def byLHS(lhs: T, m0: M): TrueStream[DProof[A[T]]] =
+      TrueStream(φ get m0 filter (_._1 == lhs) map {
+        case (_, r) => DProof.fact(op.recompose(lhs, r))
+      })
+
+    override def byRHS(rhs: T, m0: M): TrueStream[DProof[A[T]]] =
+      TrueStream(φ get m0 filter (_._2 == rhs) map {
+        case (l, _) => DProof.fact(op.recompose(l, rhs))
+      })
+  }
+
+  def know_monop[A[_], T, U, M](φ: Lens[M, Map[T, Set[U]]])(implicit op: MonOp[A, T, U], fn: FuncName) = new Know[A, T, M] {
+    override def apply(a: A[T], m0: M): TrueStream[DProof[A[T]]] =
+      StreamT apply Need {
+        val (t, u) = op.decompose(a)
+        φ get m0 get t match {
+          case Some(us) if us contains u =>
+            singleton(DProof.fact(a))
+          case _ =>
+            singleton(Disproof.failure(a))
+        }
+      }
+
+    override def byLHS(lhs: T, m0: M): TrueStream[DProof[A[T]]] =
+      φ get m0 get lhs match {
+        case Some(us) =>
+        TrueStream(us map (u => DProof.fact(op.recompose(lhs, u))))
+      case _ =>
+        StreamT.empty
+    }
+
+    override def byRHS(rhs: T, m0: M): TrueStream[DProof[A[T]]] =
+      StreamT.empty
+  }
 }
 
 trait KnowOrdModel {
 
-  implicit def know_lt[I](implicit fn: FuncName)
-  : Know[LT, I, OrdModel[I]] = new Know[LT, I, OrdModel[I]] {
-    override def apply(a: LT[I], m0: OrdModel[I]): TrueStream[DProof[LT[I]]] =
-      StreamT apply Need {
-        if(m0.lt(a.lhs -> a.rhs))
-          singleton(DProof.fact(a))
-        else
-          singleton(Disproof.failure(a))
-      }
+  implicit def know_lt[I](implicit fn: FuncName) =
+    Know.know_binop[LT, I, OrdModel[I]](OrdModel.lt)
 
-    override def byLHS(lhs: I, m0: OrdModel[I]): TrueStream[DProof[LT[I]]] =
-      TrueStream(m0.lt.filter(_._1 == lhs).map {
-        case (l, r) => DProof.fact(LT(l, r))
-      })
+  implicit def know_lt_eq[I](implicit fn: FuncName) =
+    Know.know_binop[LT_EQ, I, OrdModel[I]](OrdModel.lt_eq)
 
-    override def byRHS(rhs: I, m0: OrdModel[I]): TrueStream[DProof[LT[I]]] =
-      TrueStream(m0.lt.filter(_._2 == rhs).map {
-        case (l, r) => DProof.fact(LT(l, r))
-      })
-  }
+  implicit def know_not_eq[I](implicit fn: FuncName) =
+    Know.know_binop[NOT_EQ, I, OrdModel[I]](OrdModel.not_eq)
 
-  implicit def know_lt_eq[I](implicit fn: FuncName)
-  : Know[LT_EQ, I, OrdModel[I]] = new Know[LT_EQ, I, OrdModel[I]] {
-    override def apply(a: LT_EQ[I], m0: OrdModel[I]): TrueStream[DProof[LT_EQ[I]]] =
-      StreamT apply Need {
-        if(m0.lt_eq(a.lhs -> a.rhs))
-          singleton(DProof.fact(a))
-        else
-          singleton(Disproof.failure(a))
-      }
-
-    override def byLHS(lhs: I, m0: OrdModel[I]): TrueStream[DProof[LT_EQ[I]]] =
-      TrueStream(m0.lt_eq.filter(_._1 == lhs).map {
-        case (l, r) => DProof.fact(LT_EQ(l, r))
-      })
-
-    override def byRHS(rhs: I, m0: OrdModel[I]): TrueStream[DProof[LT_EQ[I]]] =
-      TrueStream(m0.lt_eq.filter(_._2 == rhs).map {
-        case (l, r) => DProof.fact(LT_EQ(l, r))
-      })
-  }
-
-  implicit def know_not_eq[I](implicit fn: FuncName)
-  : Know[NOT_EQ, I, OrdModel[I]] = new Know[NOT_EQ, I, OrdModel[I]] {
-    override def apply(a: NOT_EQ[I], m0: OrdModel[I]): TrueStream[DProof[NOT_EQ[I]]] = {
-      StreamT apply Need {
-        if(m0.not_eq(a.lhs -> a.rhs))
-          singleton(DProof.fact(a))
-        else
-          singleton(Disproof.failure(a))
-      }
-    }
-
-    override def byLHS(lhs: I, m0: OrdModel[I]): TrueStream[DProof[NOT_EQ[I]]] =
-      TrueStream(m0.not_eq.filter(_._1 == lhs).map {
-        case (l, r) => DProof.fact(NOT_EQ(l, r))
-      })
-
-    override def byRHS(rhs: I, m0: OrdModel[I]): TrueStream[DProof[NOT_EQ[I]]] =
-      TrueStream(m0.not_eq.filter(_._2 == rhs).map {
-        case (l, r) => DProof.fact(NOT_EQ(l, r))
-      })
-  }
-
-  implicit def know_eq[V, I](implicit fn: FuncName)
+  implicit def know_eq[V, I](implicit fn: FuncName) // needs to be custom
   : Know[EQ, I, InterpModel[V, I]] = new Know[EQ, I, InterpModel[V, I]] {
     override def apply(a: EQ[I], m0: InterpModel[V, I]): TrueStream[DProof[EQ[I]]] =
       StreamT apply Need {
@@ -159,235 +156,63 @@ trait KnowOrdModel {
 
 trait KnowIndexModel {
 
-  implicit def know_at[I](implicit fn: FuncName)
-  : Know[AT, I, IndexModel[I]] = new Know[AT, I, IndexModel[I]] {
-    override def byLHS(lhs: I, m0: IndexModel[I]): TrueStream[DProof[AT[I]]] =
-      m0.at.get(lhs) match {
-        case Some(is) =>
-          TrueStream(is map (loc => DProof.fact(AT(lhs, loc))))
-        case None =>
-          StreamT.empty
-      }
+  implicit def know_at[I](implicit fn: FuncName) =
+    Know.know_monop[AT, I, Int, IndexModel[I]](IndexModel.at)
 
-    override def apply(a: AT[I], m0: IndexModel[I]): TrueStream[DProof[AT[I]]] =
-      StreamT apply Need {
-        m0.at.get(a.point) match {
-          case Some(is) if is contains a.loc =>
-            singleton(DProof.fact(a))
-          case _ =>
-            singleton(Disproof.failure(a))
-        }
-      }
+  implicit def know_suc[I](implicit fn: FuncName) =
+    Know.know_binop[Suc, I, IndexModel[I]](IndexModel.suc)
 
-    override def byRHS(rhs: I, m0: IndexModel[I]): TrueStream[DProof[AT[I]]] =
-      StreamT.empty
-  }
-
-  implicit def know_suc[I](implicit fn: FuncName)
-  : Know[Suc, I, IndexModel[I]] = new Know[Suc, I, IndexModel[I]] {
-    override def byLHS(lhs: I, m0: IndexModel[I]): TrueStream[DProof[Suc[I]]] =
-      TrueStream(m0.suc.filter(_._1 == lhs) map (ii => DProof.fact(Suc(ii._1, ii._2))))
-
-    override def byRHS(rhs: I, m0: IndexModel[I]): TrueStream[DProof[Suc[I]]] =
-      TrueStream(m0.suc.filter(_._2 == rhs) map (ii => DProof.fact(Suc(ii._1, ii._2))))
-
-    override def apply(a: Suc[I], m0: IndexModel[I]): TrueStream[DProof[Suc[I]]] =
-      StreamT apply Need {
-        if(m0.suc(a.lhs -> a.rhs))
-          singleton(DProof.fact(a))
-        else
-          singleton(Disproof.failure(a))
-      }
-  }
 }
 
 trait KnowStrandModel {
 
-  implicit def know_strand[R](implicit fn: FuncName)
-  : Know[Strand, R, StrandModel[R]] = new Know[Strand, R, StrandModel[R]] {
-    override def byLHS(lhs: R, m0: StrandModel[R]): TrueStream[DProof[Strand[R]]] =
-      m0.strand.get(lhs) match {
-        case Some(ss) =>
-          TrueStream(ss map (s => DProof.fact(Strand(lhs, s))))
-        case None =>
-          StreamT.empty
-      }
+  implicit def know_strand[R](implicit fn: FuncName) =
+    Know.know_monop[Strand, R, Orientation, StrandModel[R]](StrandModel.strand)
 
-    override def apply(a: Strand[R], m0: StrandModel[R]): TrueStream[DProof[Strand[R]]] =
-      StreamT apply Need {
-        m0.strand.get(a.range) match {
-          case Some(ss) if ss contains a.orient =>
-            singleton(DProof.fact(a))
-          case _ =>
-            singleton(Disproof.failure(a))
-        }
-      }
+  implicit def know_same_strand_as[R](implicit fn: FuncName) =
+    Know.know_binop[SameStrandAs, R, StrandModel[R]](StrandModel.same_strand_as)
 
-    override def byRHS(rhs: R, m0: StrandModel[R]): TrueStream[DProof[Strand[R]]] =
-      StreamT.empty
-  }
-
-  implicit def know_same_strand_as[R](implicit fn: FuncName)
-  : Know[SameStrandAs, R, StrandModel[R]] = new Know[SameStrandAs, R, StrandModel[R]] {
-    override def apply(a: SameStrandAs[R], m0: StrandModel[R]): TrueStream[DProof[SameStrandAs[R]]] =
-      StreamT apply Need {
-        if(m0.same_strand_as contains (a.lhs -> a.rhs))
-          singleton(DProof.fact(a))
-        else
-          singleton(Disproof.failure(a))
-      }
-
-    override def byLHS(lhs: R, m0: StrandModel[R]): TrueStream[DProof[SameStrandAs[R]]] =
-      TrueStream(
-        m0.same_strand_as.find(_._1 == lhs) map {
-          case (l, r) => DProof.fact(SameStrandAs(l, r))
-        } orElse {
-          Disproof.noValue[SameStrandAs[R], R](lhs).some
-        })
-
-    override def byRHS(rhs: R, m0: StrandModel[R]): TrueStream[DProof[SameStrandAs[R]]] =
-      TrueStream(
-        m0.same_strand_as.find(_._2 == rhs) map {
-          case (l, r) => DProof.fact(SameStrandAs(l, r))
-        } orElse {
-          Disproof.noValue[SameStrandAs[R], R](rhs).some
-        }
-      )
-  }
-
-  implicit def know_different_strand_to[R](implicit fn: FuncName)
-  : Know[DifferentStrandTo, R, StrandModel[R]] = new Know[DifferentStrandTo, R, StrandModel[R]] {
-    override def apply(a: DifferentStrandTo[R], m0: StrandModel[R]): TrueStream[DProof[DifferentStrandTo[R]]] =
-      StreamT apply Need {
-        if(m0.different_strand_to contains (a.lhs -> a.rhs))
-          singleton(DProof.fact(a))
-        else
-          singleton(Disproof.failure(a))
-      }
-
-    override def byLHS(lhs: R, m0: StrandModel[R]): TrueStream[DProof[DifferentStrandTo[R]]] =
-      TrueStream(
-        m0.different_strand_to.find(_._1 == lhs) map {
-          case (l, r) => DProof.fact(DifferentStrandTo(l, r))
-        } orElse {
-          Disproof.noValue[DifferentStrandTo[R], R](lhs).some
-        }
-      )
-
-    override def byRHS(rhs: R, m0: StrandModel[R]): TrueStream[DProof[DifferentStrandTo[R]]] =
-      TrueStream(
-        m0.different_strand_to.find(_._2 == rhs) map {
-          case (l, r) => DProof.fact(DifferentStrandTo(l, r))
-        } orElse {
-          Disproof.noValue[DifferentStrandTo[R], R](rhs).some
-        }
-      )
-  }
+  implicit def know_different_strand_to[R](implicit fn: FuncName) =
+    Know.know_binop[DifferentStrandTo, R, StrandModel[R]](StrandModel.different_strand_to)
 }
 
 trait KnowRangeModel {
 
-  implicit def know_rangeAs[T](implicit fn: FuncName)
-  : Know[RangeAs, T, RangeModel[T, T]] = new Know[RangeAs, T, RangeModel[T, T]] {
-    override def byLHS(lhs: T, m0: RangeModel[T, T]): TrueStream[DProof[RangeAs[T]]] =
-      TrueStream(
-        m0.rangeAs.filter(_._1 == lhs) flatMap {
-          case(r, abs) => abs map { case (a, b) => DProof.fact(RangeAs(r, a, b)) }
-        }
-      )
-
-    override def byRHS(rhs: T, m0: RangeModel[T, T]): TrueStream[DProof[RangeAs[T]]] =
-      StreamT.empty
-
-    override def apply(a: RangeAs[T], m0: RangeModel[T, T]): TrueStream[DProof[RangeAs[T]]] =
-      TrueStream(
-        for {
-          r <- m0.rangeAs.keys
-          (a, b) <- m0.rangeAs(r)
-        } yield DProof.fact(RangeAs(r, a, b))
-      )
-  }
+  implicit def know_rangeAs[T](implicit fn: FuncName) =
+    Know.know_monop[RangeAs, T, (T, T), RangeModel[T, T]](RangeModel.rangeAs)
 }
 
 trait KnowLengthModel {
 
-  implicit def know_length[R](implicit fn: FuncName)
-  : Know[Length, R, LengthModel[R]] = new Know[Length, R, LengthModel[R]] {
-    override def apply(a: Length[R], m0: LengthModel[R]): TrueStream[DProof[Length[R]]] =
-      StreamT apply Need {
-        m0.length.get(a.point) match {
-          case Some(ls) if ls contains a.length =>
-            singleton(DProof.fact(a))
-          case _ =>
-            singleton(Disproof.failure(a))
-        }
-      }
+  implicit def know_length[R](implicit fn: FuncName) =
+    Know.know_monop[Length, R, Int, LengthModel[R]](LengthModel.length)
 
-    override def byLHS(lhs: R, m0: LengthModel[R]): TrueStream[DProof[Length[R]]] =
-      m0.length.get(lhs) match {
-        case Some(ls) =>
-          TrueStream(ls map (len => DProof.fact(Length(lhs, len))))
-        case None =>
-          StreamT.empty
-      }
-
-    override def byRHS(rhs: R, m0: LengthModel[R]): TrueStream[DProof[Length[R]]] =
-      StreamT.empty
-  }
 }
 
 trait KnowLowPriorityImplicits {
   
   import Know.KnowOps
 
-  def knowFrom[A[_], T, M0, M1]
-  (f: M0 => M1)
-  (implicit k: Know[A, T, M1])
-  : Know[A, T, M0] = new Know[A, T, M0] {
-    override def byLHS(lhs: T, m0: M0): TrueStream[DProof[A[T]]] =
-      k.byLHS(lhs, f(m0))
+  implicit def know_dsFromModel[A[_], T, R, V, I](implicit k: Know[A, T, Model[R, V, I]]) =
+    Know.know_on[A, T, DerivationState[R, V, I], Model[R, V, I]](DerivationState.m0)
 
-    override def byRHS(rhs: T, m0: M0): TrueStream[DProof[A[T]]] =
-      k.byRHS(rhs, f(m0))
+  implicit def know_modelFromInterp[A[_], R, V, I](implicit k: Know[A, I, InterpModel[V, I]]) =
+    Know.know_on[A, I, Model[R, V, I], InterpModel[V, I]](Model.i)
 
-    override def apply(a: A[T], m0: M0): TrueStream[DProof[A[T]]] =
-      k(a, f(m0))
-  }
+  implicit def know_modelFromOrd[A[_], R, V, I](implicit k: Know[A, I, OrdModel[I]]) =
+    Know.know_on[A, I, Model[R, V, I], OrdModel[I]](Model.ord)
 
-  implicit def know_dsFromModel[A[_], T, R, V, I]
-  (implicit k: Know[A, T, Model[R, V, I]])
-  : Know[A, T, DerivationState[R, V, I]] =
-    knowFrom(_.m0)
+  implicit def know_modelFromIndex[A[_], R, V, I](implicit k: Know[A, I, IndexModel[I]]) =
+    Know.know_on[A, I, Model[R, V, I], IndexModel[I]](Model.index)
 
-  implicit def know_modelFromInterp[A[_], R, V, I]
-  (implicit k: Know[A, I, InterpModel[V, I]])
-  : Know[A, I, Model[R, V, I]] =
-    knowFrom(_.i)
+  implicit def know_modelFromStrand[A[_], R, V, I](implicit k: Know[A, R, StrandModel[R]]) =
+    Know.know_on[A, R, Model[R, V, I], StrandModel[R]](Model.str)
 
-  implicit def know_modelFromOrd[A[_], R, V, I]
-  (implicit k: Know[A, I, OrdModel[I]])
-  : Know[A, I, Model[R, V, I]] =
-    knowFrom(_.ord)
+  implicit def know_modelFromLength[A[_], R, V, I](implicit k: Know[A, R, LengthModel[R]]) =
+    Know.know_on[A, R, Model[R, V, I], LengthModel[R]](Model.length)
 
-  implicit def know_modelFromIndex[A[_], R, V, I]
-  (implicit k: Know[A, I, IndexModel[I]])
-  : Know[A, I, Model[R, V, I]] =
-    knowFrom(_.index)
-
-  implicit def know_modelFromStrand[A[_], R, V, I]
-  (implicit k: Know[A, R, StrandModel[R]])
-  : Know[A, R, Model[R, V, I]] =
-    knowFrom(_.str)
-
-  implicit def know_modelFromLength[A[_], R, V, I]
-  (implicit k: Know[A, R, LengthModel[R]])
-  : Know[A, R, Model[R, V, I]] =
-    knowFrom(_.length)
-
-  implicit def know_modelFromRange[A[_], T, I]
-  (implicit k: Know[A, T, RangeModel[T, T]])
-  : Know[A, T, Model[T, T, I]] =
-    knowFrom(_.range)
+  implicit def know_modelFromRange[A[_], T, I](implicit k: Know[A, T, RangeModel[T, T]]) =
+    Know.know_on[A, T, Model[T, T, I], RangeModel[T, T]](Model.range)
 }
 
 trait KnowLowLowPriorityImplicits {
