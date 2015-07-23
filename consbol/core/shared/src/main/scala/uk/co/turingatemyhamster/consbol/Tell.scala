@@ -3,6 +3,7 @@ package uk.co.turingatemyhamster.consbol
 import Interpretation._
 
 import scala.language.higherKinds
+import monocle.Lens
 
 
 trait Tell[A, M] {
@@ -23,25 +24,31 @@ object Tell
     def tell[A](a: A)(implicit t: Tell[A, M]): M = t(a, m)
   }
 
+  def tell_binops[A[_], T, M](l: Lens[M, Set[(T, T)]])(implicit op: BinOp[A, T]): Tell[A[T], M] = new Tell[A[T], M] {
+    override def apply(a: A[T], m: M): M =
+      l.modify(_ + op.decompose(a))(m)
+  }
+
+  def tell_monops[A[_], T, U, M](l: Lens[M, Map[T, Set[U]]])(implicit op: MonOp[A, T, U]): Tell[A[T], M] = new Tell[A[T], M] {
+    override def apply(a: A[T], m: M): M = {
+      val (t, u) = op.decompose(a)
+      l.modify(m0 => m0 + (t -> (m0.getOrElse(t, Set()) + u)))(m)
+    }
+  }
 }
 
 trait TellOrdModel {
 
-  implicit def tell_lt[I]: Tell[LT[I], OrdModel[I]] = new Tell[LT[I], OrdModel[I]] {
-    override def apply(a: LT[I], m: OrdModel[I]): OrdModel[I] =
-      m.copy(lt = m.lt + (a.lhs -> a.rhs))
-  }
+  implicit def tell_lt[I] =
+    Tell.tell_binops[LT, I, OrdModel[I]](OrdModel.lt)
 
-  implicit def tell_lt_eq[I]: Tell[LT_EQ[I], OrdModel[I]] = new Tell[LT_EQ[I], OrdModel[I]] {
-    override def apply(a: LT_EQ[I], m: OrdModel[I]): OrdModel[I] =
-      m.copy(lt_eq = m.lt_eq + (a.lhs -> a.rhs))
-  }
+  implicit def tell_lt_eq[I] =
+    Tell.tell_binops[LT_EQ, I, OrdModel[I]](OrdModel.lt_eq)
 
-  implicit def tell_not_eq[I]: Tell[NOT_EQ[I], OrdModel[I]] = new Tell[NOT_EQ[I], OrdModel[I]] {
-    override def apply(a: NOT_EQ[I], m: OrdModel[I]): OrdModel[I] =
-      m.copy(not_eq = m.not_eq + (a.lhs -> a.rhs))
-  }
+  implicit def tell_not_eq[I] =
+    Tell.tell_binops[NOT_EQ, I, OrdModel[I]](OrdModel.not_eq)
 
+  // this one requires special handling
   implicit def tell_eq[R, V, I]
   (implicit vi: InterpretationSingleton[V, I], unify: UnifyI[I])
   : Tell[EQ[V], Model[R, V, I]] = new Tell[EQ[V], Model[R, V, I]] {
@@ -49,6 +56,7 @@ trait TellOrdModel {
       m merge (a.lhs, a.rhs)
   }
 
+  // this one requires special handling
   implicit def tell_eq_inv[R, V, I]
   (implicit
    vi: InterpretationSingleton[V, I], unify: UnifyI[I],
@@ -62,15 +70,11 @@ trait TellOrdModel {
 
 trait TellIndexModel {
 
-  implicit def tell_at[I]: Tell[AT[I], IndexModel[I]] = new Tell[AT[I], IndexModel[I]] {
-    override def apply(a: AT[I], m: IndexModel[I]): IndexModel[I] =
-      m.copy(at = m.at + (a.point -> (m.at.getOrElse(a.point, Set()) + a.loc)))
-  }
+  implicit def tell_at[I]: Tell[AT[I], IndexModel[I]] =
+    Tell.tell_monops[AT, I, Int, IndexModel[I]](IndexModel.at)
 
-  implicit def tell_suc[I]: Tell[Suc[I], IndexModel[I]] = new Tell[Suc[I], IndexModel[I]] {
-    override def apply(a: Suc[I], m: IndexModel[I]): IndexModel[I] =
-      m.copy(suc = m.suc + (a.lhs -> a.rhs))
-  }
+  implicit def tell_suc[I] =
+    Tell.tell_binops[Suc, I, IndexModel[I]](IndexModel.suc)
 }
 
 trait TellStrandModel {
@@ -80,34 +84,25 @@ trait TellStrandModel {
       m.copy(strand = m.strand + (a.range -> (m.strand.getOrElse(a.range, Set()) + a.orient)))
   }
 
-  implicit def tell_same_strand_as[R]: Tell[SameStrandAs[R], StrandModel[R]] = new Tell[SameStrandAs[R], StrandModel[R]] {
-    override def apply(a: SameStrandAs[R], m: StrandModel[R]): StrandModel[R] =
-      m.copy(same_strand_as = m.same_strand_as + (a.lhs -> a.rhs))
-  }
+  implicit def tell_same_strand_as[R] =
+    Tell.tell_binops[SameStrandAs, R, StrandModel[R]](StrandModel.same_strand_as)
 
-  implicit def tell_different_strand_to[R]: Tell[DifferentStrandTo[R], StrandModel[R]] = new Tell[DifferentStrandTo[R], StrandModel[R]] {
-    override def apply(a: DifferentStrandTo[R], m: StrandModel[R]): StrandModel[R] =
-      m.copy(different_strand_to = m.different_strand_to + (a.lhs -> a.rhs))
-  }
+  implicit def tell_different_strand_to[R] =
+    Tell.tell_binops[DifferentStrandTo, R, StrandModel[R]](StrandModel.different_strand_to)
+
 }
 
 trait TellLengthModel {
 
-  implicit def tell_length[R]: Tell[Length[R], LengthModel[R]] = new Tell[Length[R], LengthModel[R]] {
-    override def apply(a: Length[R], m: LengthModel[R]): LengthModel[R] =
-      m.copy(length = m.length +
-        (a.point -> (m.length.getOrElse(a.point, Set()) + a.length)))
-  }
+  implicit def tell_length[R]: Tell[Length[R], LengthModel[R]] =
+    Tell.tell_monops[Length, R, Int, LengthModel[R]](LengthModel.length)
 
 }
 
 trait TellRangeModel {
 
-  implicit def tell_rangeAs[T]: Tell[RangeAs[T], RangeModel[T, T]] = new Tell[RangeAs[T], RangeModel[T, T]] {
-    override def apply(a: RangeAs[T], m: RangeModel[T, T]): RangeModel[T, T] =
-      m.copy(rangeAs = m.rangeAs +
-        (a.range -> (m.rangeAs.getOrElse(a.range, Set()) + (a.lower -> a.upper))))
-  }
+  implicit def tell_rangeAs[T]: Tell[RangeAs[T], RangeModel[T, T]] =
+    Tell.tell_monops[RangeAs, T, (T, T), RangeModel[T, T]](RangeModel.rangeAs)
 
 }
 

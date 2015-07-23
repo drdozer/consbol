@@ -295,7 +295,7 @@ trait KnowRangeModel {
           case(r, abs) => abs map { case (a, b) => DProof.fact(RangeAs(r, a, b)) }
         }
       )
-    
+
     override def byRHS(rhs: T, m0: RangeModel[T, T]): TrueStream[DProof[RangeAs[T]]] =
       StreamT.empty
 

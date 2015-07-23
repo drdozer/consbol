@@ -2,10 +2,9 @@ package uk.co.turingatemyhamster.consbol
 
 import Unifier._
 import Interpretation._
+import monocle.macros._
 
-/**
- * Created by nmrp3 on 28/06/15.
- */
+@Lenses
 case class Model[R, V, I](i: InterpModel[V, I],
                           ord: OrdModel[I],
                           index: IndexModel[I],
@@ -48,20 +47,26 @@ object Model {
     length = LengthModel())
 }
 
+@Lenses
 case class IndexModel[I](at: Map[I, Set[Int]] = Map.empty[I, Set[Int]],
                          suc: Set[(I, I)] = Set.empty[(I, I)])
 
+@Lenses
 case class InterpModel[V, I](v2i: Map[V, I] = Map.empty[V, I],
                              eq: Map[I, Set[V]] = Map.empty[I, Set[V]])
 
+@Lenses
 case class OrdModel[I](lt: Set[(I, I)] = Set.empty[(I, I)],
                        lt_eq: Set[(I, I)] = Set.empty[(I, I)],
                        not_eq: Set[(I, I)] = Set.empty[(I, I)])
 
+@Lenses
 case class StrandModel[R](strand: Map[R, Set[Orientation]] = Map.empty[R, Set[Orientation]],
                           same_strand_as: Set[(R, R)] = Set.empty[(R, R)],
                           different_strand_to: Set[(R, R)] = Set.empty[(R, R)])
 
+@Lenses
 case class LengthModel[R](length: Map[R, Set[Int]] = Map.empty[R, Set[Int]])
 
+@Lenses
 case class RangeModel[R, V](rangeAs: Map[R, Set[(V, V)]] = Map.empty[R, Set[(V, V)]])

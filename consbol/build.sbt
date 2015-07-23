@@ -26,12 +26,16 @@ lazy val core = crossProject.settings(
   ).settings(sharedSettings : _*).dependsOn(util)
 
 lazy val coreJS = core.js.settings(
-  libraryDependencies += "com.github.japgolly.fork.scalaz" %%% "scalaz-core" % "7.1.3"
+  libraryDependencies += "com.github.japgolly.fork.scalaz" %%% "scalaz-core" % "7.1.3",
+  libraryDependencies += "com.github.japgolly.fork.monocle" %%% "monocle-core" % "1.1.1",
+  libraryDependencies += "com.github.japgolly.fork.monocle" %%% "monocle-macro" % "1.1.1"
   )
 
 lazy val coreJVM = core.jvm.settings(
 //  scalacOptions += "-Xlog-implicits",
-  libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.3"
+  libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.3",
+  libraryDependencies += "com.github.julien-truffaut"  %%  "monocle-core"    % "1.1.1",
+  libraryDependencies += "com.github.julien-truffaut"  %%  "monocle-macro"   % "1.1.1"
   )
 
 

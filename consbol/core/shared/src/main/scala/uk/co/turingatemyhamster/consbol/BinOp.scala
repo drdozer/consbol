@@ -1,6 +1,7 @@
 package uk.co.turingatemyhamster.consbol
 
 import scala.language.higherKinds
+import scalaz.std.option._
 
 /**
  * Created by nmrp3 on 01/07/15.
@@ -87,6 +88,9 @@ object MonOp {
   implicit def monop_strand[T]: MonOp[Strand, T, Orientation] = MonOp[Strand, T, Orientation](Strand.apply, Strand.unapply)
   implicit def monop_at[T]: MonOp[AT, T, Int] = MonOp[AT, T, Int](AT.apply, AT.unapply)
   implicit def monop_length[T]: MonOp[Length, T, Int] = MonOp[Length, T, Int](Length.apply, Length.unapply)
+  implicit def monop_rangeAt[T]: MonOp[RangeAs, T, (T, T)] = MonOp[RangeAs, T, (T, T)](
+    {case(r, (a, b)) => RangeAs(r, a, b)},
+    {case RangeAs(r, l, u) => some(r, (l, u))})
 }
 
 trait MonOp[O[_], T, X] {
