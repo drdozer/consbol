@@ -11,7 +11,8 @@ object DeriveIndexTestSuite extends TestSuite with DeriveTestSuiteBase {
     import Tell._
     import Know._
     import Derive._
-    import ds0.env._
+    import ds0.env.index._
+    import ds0.env.ord._
 
     'lt - {
 

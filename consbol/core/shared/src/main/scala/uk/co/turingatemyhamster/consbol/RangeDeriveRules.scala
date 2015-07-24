@@ -4,13 +4,12 @@ package uk.co.turingatemyhamster.consbol
 import uk.co.turingatemyhamster.consbol.util.FuncName
 import uk.co.turingatemyhamster.consbol.util.FuncNameUtils._
 
-trait RangeDeriveEnv[R, V, I] {
-  self : DeriveEnvBase[R, V, I] =>
-
+case class RangeDeriveEnv[R, V, I](rules: DeriveDSL[R, V, I],
+                                   derives_RangeAs: List[Derive[RangeAs[R, I], R, V, I]])
+{
   import rules._
 
   implicit lazy final val `RangeAs(r, a, b) -| ?` = guard { derives_RangeAs.reduce(_ || _) }
-  def derives_RangeAs: List[Derive[RangeAs[R, I], R, V, I]]
 }
 
 trait RangeDeriveRules[R, V, I] {

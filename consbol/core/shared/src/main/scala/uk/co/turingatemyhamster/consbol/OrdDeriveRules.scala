@@ -3,22 +3,18 @@ package uk.co.turingatemyhamster.consbol
 import Derive._
 import uk.co.turingatemyhamster.consbol.util.FuncNameUtils._
 
-trait OrdDeriveEnv[R, V, I] {
-  self : RangeDeriveEnv[R, V, I] with DeriveEnvBase[R, V, I] =>
-
+case class OrdDeriveEnv[R, V, I](rules: DeriveDSL[R, V, I],
+                                 derives_LT: List[Derive[LT[I], R, V, I]],
+                                 derives_LT_EQ: List[Derive[LT_EQ[I], R, V, I]],
+                                 derives_EQ: List[Derive[EQ[I], R, V, I]],
+                                 derives_NOT_EQ: List[Derive[NOT_EQ[I], R, V, I]])
+{
   import rules._
 
   implicit lazy final val `a < b -| ?` = guard { derives_LT.reduce(_ || _) }
-  def derives_LT: List[Derive[LT[I], R, V, I]]
-
   implicit lazy final val `a <= b -| ?` = guard { derives_LT_EQ.reduce(_ || _) }
-  def derives_LT_EQ: List[Derive[LT_EQ[I], R, V, I]]
-
   implicit lazy final val `a = b -| ?` = guard { derives_EQ.reduce(_ || _) }
-  def derives_EQ: List[Derive[EQ[I], R, V, I]]
-
   implicit lazy final val `a != b -| ?` = guard { derives_NOT_EQ.reduce(_ || _) }
-  def derives_NOT_EQ: List[Derive[NOT_EQ[I], R, V, I]]
 }
 
 trait OrdDeriveRules[R, V, I] {
@@ -38,7 +34,7 @@ trait OrdDeriveRules[R, V, I] {
 
 
   final lazy val `a < c -| a < b, b <= c` = withEnv[LT[I]] { env =>
-    import env._
+    import env.ord._
     newEnvA(env without ltRecursion without lteqRecursion) { a =>
     a.lhs.deriveLHS[LT] (
       lhsD => Disproof1(a, lhsD),
@@ -53,7 +49,7 @@ trait OrdDeriveRules[R, V, I] {
   }
 
   final lazy val `a < c -| a <= b, b < c` = withEnv[LT[I]] { env =>
-    import env._
+    import env.ord._
     newEnvA(env without ltRecursion without lteqRecursion) { a =>
     a.lhs.knowLHS[LT_EQ] (
       lhsD => Disproof1(a, lhsD),
@@ -69,7 +65,7 @@ trait OrdDeriveRules[R, V, I] {
 
 
   final lazy val `a < c -| a < b, b < c` = withEnv[LT[I]] { env =>
-    import env._
+    import env.ord._
     newEnvA(env without ltRecursion without lteqRecursion) { a =>
     a.lhs.deriveLHS[LT] (
       lhsD => Disproof1(a, lhsD),
@@ -86,7 +82,7 @@ trait OrdDeriveRules[R, V, I] {
   final lazy val `a <= b -| k(a <= b)` = known[LT_EQ, I]
 
   final lazy val `a <= c -| a <= b, b <= c` = withEnv[LT_EQ[I]] { env =>
-    import env._
+    import env.ord._
     newEnvA(env without ltRecursion without lteqRecursion) { a =>
     a.lhs.knowLHS[LT_EQ] (
       lhsD => Disproof1(a, lhsD),
@@ -101,7 +97,7 @@ trait OrdDeriveRules[R, V, I] {
   }
 
   final lazy val `a <= b -| a < b` = withEnv[LT_EQ[I]] { env => a =>
-    import env._
+    import env.ord._
     LT(a.lhs, a.rhs) derive (
       lhsD => Disproof1(a, lhsD),
       lhsP => Proof1(a, lhsP)
@@ -110,7 +106,7 @@ trait OrdDeriveRules[R, V, I] {
 
 
   final lazy val `a = b -| a <=b, b <= a` = withEnv[EQ[I]] { env => a =>
-    import env._
+    import env.ord._
     LT_EQ(a.lhs, a.rhs) derive (
       lhsD => Disproof1(a, lhsD),
       lhsP => LT_EQ(a.rhs, a.lhs) derive (
@@ -123,7 +119,7 @@ trait OrdDeriveRules[R, V, I] {
   final lazy val `a != b -| k(a != b)` = known[NOT_EQ, I]
 
   final lazy val `a != b -| a < b` = withEnv[NOT_EQ[I]] { env => a =>
-    import env._
+    import env.ord._
     LT(a.lhs, a.rhs) derive (
       lhsD => Disproof1(a, lhsD),
       lhsP => Proof1(a, lhsP)
@@ -131,7 +127,7 @@ trait OrdDeriveRules[R, V, I] {
   }
 
   final lazy val `a != b -| b < a` = withEnv[NOT_EQ[I]] { env => a =>
-    import env._
+    import env.ord._
     LT(a.rhs, a.lhs) derive (
       lhsD => Disproof1(a, lhsD),
       lhsP => Proof1(a, lhsP)
