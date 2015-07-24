@@ -51,6 +51,18 @@ case class InterpretedDisproof[A[_], V, I](goal: A[V],
   def name = "interpreted"
 }
 
+case class InterpretedProof2[A[_, _], T, V, I](goal: A[T, V],
+                                        cuts: Option[Set[Any]],
+                                        interpreted: Proof[A[T, I]]) extends Proof[A[T, V]] {
+  def name = "interpreted"
+}
+
+case class InterpretedDisproof2[A[_, _], T, V, I](goal: A[T, V],
+                                           cuts: Option[Set[Any]],
+                                           interpreted: Disproof[A[T, I]]) extends Disproof[A[T, V]] {
+  def name = "interpreted"
+}
+
 case class Fact[A](name: String,
                    goal: A,
                    cuts: Option[Set[Any]]) extends Proof[A]
@@ -121,6 +133,18 @@ object DProof {
 
   def interpreted[A[_], V, I](goal: A[V], interp: Disproof[A[I]]): DProof[A[V]] =
     InterpretedDisproof[A, V, I](goal, None, interp).left
+
+  def interpreted2[A[_, _], T, V, I](goal: A[T, V], interp: DProof[A[T, I]]): DProof[A[T, V]] =
+    interp.fold(
+      i => interpreted2[A, T, V, I](goal, i),
+      i => interpreted2[A, T, V, I](goal, i)
+    )
+
+  def interpreted2[A[_, _], T, V, I](goal: A[T, V], interp: Proof[A[T, I]]): DProof[A[T, V]] =
+    InterpretedProof2[A, T, V, I](goal, None, interp).right
+
+  def interpreted2[A[_, _], T, V, I](goal: A[T, V], interp: Disproof[A[T, I]]): DProof[A[T, V]] =
+    InterpretedDisproof2[A, T, V, I](goal, None, interp).left
 }
 
 object Disproof {

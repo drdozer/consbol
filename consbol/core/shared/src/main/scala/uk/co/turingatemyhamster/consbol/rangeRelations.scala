@@ -17,7 +17,8 @@ object Orientation {
 }
 
 
-case class RangeAs[T](range: T, lower: T, upper: T)
+case class RangeAs[R, I](range: R, lower: I, upper: I)
+
 
 case class Strand[R](range: R, orient: Orientation) {
   override def toString = s"$orient$range"
@@ -30,6 +31,7 @@ case class SameStrandAs[R](lhs: R, rhs: R) {
 case class DifferentStrandTo[R](lhs: R, rhs: R) {
   override def toString = s"$lhs∓$rhs"
 }
+
 
 case class ShorterThan[R](lhs: R, rhs: R)
 

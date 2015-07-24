@@ -32,6 +32,29 @@ trait KnowValueLowPriorityImplicits {
 
 }
 
+trait KnowValue2[A, U, M] {
+  def apply(t: U, m0: M): TrueStream[A]
+}
+
+object KnowValue2 extends KnowValue2LowPriorityImplicits {
+
+  implicit def knowValue_rangeAs[R, V]
+  : KnowValue2[RangeAs[R, V], (V, V), RangeModel[R, V]] = new KnowValue2[RangeAs[R, V], (V, V), RangeModel[R, V]] {
+    override def apply(vv: (V, V), m0: RangeModel[R, V]): TrueStream[RangeAs[R, V]] =
+      TrueStream(m0.rangeAs.filter(_._2 contains vv) map (ro => RangeAs(ro._1, vv._1, vv._2)))
+  }
+
+}
+
+trait KnowValue2LowPriorityImplicits {
+
+  implicit def knowValue_fromModel[A, R, V, I](implicit k: KnowValue2[A, (I, I), RangeModel[R, I]])
+  : KnowValue2[A, (I, I), Model[R, V, I]] = new KnowValue2[A, (I, I), Model[R, V, I]] {
+    override def apply(ii: (I, I), m0: Model[R, V, I]): TrueStream[A] =
+      k(ii, m0.range)
+  }
+
+}
 trait Know[A[_], T, M] {
   def apply(a: A[T], m0: M): TrueStream[DProof[A[T]]]
 
@@ -45,7 +68,6 @@ object Know
   with KnowIndexModel
   with KnowStrandModel
   with KnowLengthModel
-  with KnowRangeModel
   with KnowLowPriorityImplicits
   with KnowLowLowPriorityImplicits
 {
@@ -58,6 +80,17 @@ object Know
       k.byLHS(lhs, m)
 
     def knowRHS[A[_], T](rhs: T)(implicit k: Know[A, T, M]) =
+      k.byRHS(rhs, m)
+  }
+
+  implicit class Know2Ops[M](val m: M) {
+    def know[A[_, _], T, U](a: A[T, U])(implicit k: Know2[A, T, U, M]) =
+      k(a, m)
+
+    def knowLHS[A[_, _], T, U](lhs: T)(implicit k: Know2[A, T, U, M]) =
+      k.byLHS(lhs, m)
+
+    def knowRHS[A[_, _], T, U](rhs: T)(implicit k: Know2[A, T, U, M]) =
       k.byRHS(rhs, m)
   }
 
@@ -176,12 +209,6 @@ trait KnowStrandModel {
     Know.know_binop[DifferentStrandTo, R, StrandModel[R]](StrandModel.different_strand_to)
 }
 
-trait KnowRangeModel {
-
-  implicit def know_rangeAs[T](implicit fn: FuncName) =
-    Know.know_monop[RangeAs, T, (T, T), RangeModel[T, T]](RangeModel.rangeAs)
-}
-
 trait KnowLengthModel {
 
   implicit def know_length[R](implicit fn: FuncName) =
@@ -211,8 +238,6 @@ trait KnowLowPriorityImplicits {
   implicit def know_modelFromLength[A[_], R, V, I](implicit k: Know[A, R, LengthModel[R]]) =
     Know.know_on[A, R, Model[R, V, I], LengthModel[R]](Model.length)
 
-  implicit def know_modelFromRange[A[_], T, I](implicit k: Know[A, T, RangeModel[T, T]]) =
-    Know.know_on[A, T, Model[T, T, I], RangeModel[T, T]](Model.range)
 }
 
 trait KnowLowLowPriorityImplicits {
@@ -245,5 +270,88 @@ trait KnowLowLowPriorityImplicits {
         p => DProof.interpreted((m1 coimage p.goal).get, p)))
     }
   }
+
+}
+
+
+trait Know2[A[_, _], T, U, M] {
+  def apply(a: A[T, U], m0: M): TrueStream[DProof[A[T, U]]]
+
+  def byLHS(lhs: T, m0: M): TrueStream[DProof[A[T, U]]]
+
+  def byRHS(rhs: T, m0: M): TrueStream[DProof[A[T, U]]]
+}
+
+object Know2
+  extends Know2RangeModel
+  with Know2LowPriorityImplicits
+{
+
+  def know_on[A[_, _], T, U, M1, M2](φ: Lens[M1, M2])(implicit k: Know2[A, T, U, M2]) = new Know2[A, T, U, M1] {
+    override def apply(a: A[T, U], m0: M1): TrueStream[DProof[A[T, U]]] = k(a, φ.get(m0))
+
+    override def byLHS(lhs: T, m0: M1): TrueStream[DProof[A[T, U]]] = k.byLHS(lhs, φ.get(m0))
+
+    override def byRHS(rhs: T, m0: M1): TrueStream[DProof[A[T, U]]] = k.byRHS(rhs, φ.get(m0))
+  }
+
+  def know_monop[A[_, _], T, U, X, M](φ: Lens[M, Map[T, Set[X]]])
+                                     (implicit op: MonOp2[A, T, U, X], fn: FuncName) = new Know2[A, T, U, M] {
+    override def apply(a: A[T, U], m0: M): TrueStream[DProof[A[T, U]]] =
+      StreamT apply Need {
+        val (t, u) = op.decompose(a)
+        φ get m0 get t match {
+          case Some(us) if us contains u =>
+            singleton(DProof.fact(a))
+          case _ =>
+            singleton(Disproof.failure(a))
+        }
+      }
+
+    override def byLHS(lhs: T, m0: M): TrueStream[DProof[A[T, U]]] =
+      φ get m0 get lhs match {
+        case Some(us) =>
+          TrueStream(us map (u => DProof.fact(op.recompose(lhs, u))))
+        case _ =>
+          StreamT.empty
+      }
+
+    override def byRHS(rhs: T, m0: M): TrueStream[DProof[A[T, U]]] =
+      StreamT.empty
+  }
+
+}
+
+
+trait Know2RangeModel {
+
+  implicit def know_rangeAs[R, I](implicit fn: FuncName) =
+    Know2.know_monop[RangeAs, R, I, (I, I), RangeModel[R, I]](RangeModel.rangeAs)
+
+}
+
+trait Know2LowPriorityImplicits {
+
+  implicit def know_usingInterpretation[A[_, _], T, R, V, I]
+  (implicit
+   inV: Interpretation[V, I, Model[R, V, I]],
+   inA: Interpretation[A[T, V], A[T, I], Model[R, V, I]],
+   k: Know2[A, T, I, Model[R, V, I]]) = new Know2[A, T, V, Model[R, V, I]]
+  {
+    override def apply(a: A[T, V], m0: Model[R, V, I]): TrueStream[DProof[A[T, V]]] = {
+      val (a1, m1) = inA.apply(a, m0)
+      k(a1, m1) map (p => DProof.interpreted2(a, p))
+    }
+
+    override def byLHS(lhs: T, m0: Model[R, V, I]): TrueStream[DProof[A[T, V]]] = ???
+
+    override def byRHS(rhs: T, m0: Model[R, V, I]): TrueStream[DProof[A[T, V]]] = ???
+  }
+
+  implicit def know_dsFromModel[A[_, _], T, U, R, V, I](implicit k: Know2[A, T, U, Model[R, V, I]]) =
+    Know2.know_on[A, T, U, DerivationState[R, V, I], Model[R, V, I]](DerivationState.m0)
+
+  implicit def know_modelFromRange[A[_, _], R, V, I](implicit k: Know2[A, R, I, RangeModel[R, I]]) =
+    Know2.know_on[A, R, I, Model[R, V, I], RangeModel[R, I]](Model.range)
 
 }

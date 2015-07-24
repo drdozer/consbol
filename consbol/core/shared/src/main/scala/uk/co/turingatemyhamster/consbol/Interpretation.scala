@@ -97,6 +97,41 @@ object Interpretation {
       } yield vOp.recompose(lhsV, x)
     }
   }
+
+  implicit def monOp2Interpretation[A[_, _], X, Y, R, V, I]
+  (implicit vOp: MonOp2[A, R, V, X], iOp: MonOp2[A, R, I, Y], viX: Interpretation[X, Y, Model[R, V, I]])
+  : Interpretation[A[R, V], A[R, I], Model[R, V, I]] = new Interpretation[A[R, V], A[R, I], Model[R, V, I]]
+  {
+    override def unapply(a: A[R, I], m: Model[R, V, I]): Option[A[R, V]] = {
+      val (r, y) = iOp.decompose(a)
+      for {
+        x <- viX.unapply(y, m)
+      } yield vOp.recompose(r, x)
+    }
+
+    override def apply(a: A[R, V], m0: Model[R, V, I]): (A[R, I], Model[R, V, I]) = {
+      val (r, x) = vOp.decompose(a)
+      val (y, m1) = viX(x, m0)
+      iOp.recompose(r, y) -> m1
+    }
+  }
+
+  implicit def pairInterpretation[X, Y, M](implicit i: Interpretation[X, Y, M])
+  : Interpretation[(X, X), (Y, Y), M] = new Interpretation[(X, X), (Y, Y), M]
+  {
+    override def unapply(a: (Y, Y), m: M): Option[(X, X)] = {
+      for {
+        x1 <- i.unapply(a._1, m)
+        x2 <- i.unapply(a._2, m)
+      } yield (x1, x2)
+    }
+
+    override def apply(a: (X, X), m: M): ((Y, Y), M) = {
+      val (y1, m1) = i(a._1, m)
+      val (y2, m2) = i(a._2, m1)
+      (y1, y2) -> m2
+    }
+  }
 }
 
 

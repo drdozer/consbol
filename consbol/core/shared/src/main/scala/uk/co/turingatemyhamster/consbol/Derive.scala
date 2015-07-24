@@ -10,7 +10,6 @@ import scalaz.Scalaz._
 import Derive._
 import Tell.TellOps
 
-
 @Lenses
 case class DerivationState[R, V, I](env: DeriveEnv[R, V, I],
                                     cuts: Set[Any] = Set.empty,
@@ -199,6 +198,12 @@ trait DeriveDSL[R, V, I] {
          (_ -> ds0)
   }
 
+  def known2[A[_, _], T, U]
+  (implicit k: Know2[A, T, U, DerivationState[R, V, I]], fn: FuncName) = Derive[A[T, U], R, V, I] { a => ds0 =>
+      k(a, ds0) map
+        (_ -> ds0)
+  }
+
   def onlyIf[A, B](p: Boolean)(f: DerivationStep[B, R, V, I])
   : DerivationStep[B, R, V, I] =
     if(p)
@@ -278,6 +283,20 @@ trait DeriveDSL[R, V, I] {
           )) flatMap (_.fold(fd(_)(ds0), fp(_)(ds0)))
       }
     }
+
+    def knowValue2[A] = new {
+      def apply[B](fd: Disproof[A] => DerivationStep[B, R, V, I],
+                   fp: Proof[A] => DerivationStep[B, R, V, I])
+                  (implicit k: KnowValue2[A, L, Model[R, V, I]], fn: FuncName): DerivationStep[B, R, V, I] = { ds0 =>
+        k(_lhs, ds0.m0) map
+          (a => Proof.fact(a).right[Disproof[A]]) map
+          (_.fold(
+            d => d.left,
+            p => if(ds0.cuts contains p.goal) DProof.cut(p.goal, ds0.cuts) else p.right
+          )) flatMap (_.fold(fd(_)(ds0), fp(_)(ds0)))
+      }
+    }
+
   }
 
   def all[A[_], T](f: T => DerivationStep[A[T], R, V, I])
@@ -323,6 +342,7 @@ trait DeriveRules[R, V, I]
   extends OrdDeriveRules[R, V, I]
   with IndexDeriveRules[R, V, I]
   with StrandDeriveRules[R, V, I]
+  with RangeDeriveRules[R, V, I]
   with LengthDeriveRules[R, V, I]
   with DeriveDSL[R, V, I]
 
@@ -347,6 +367,7 @@ case class DeriveEnv[R, V, I](rules: DeriveRules[R, V, I],
                               derives_NOT_EQ: List[Derive[NOT_EQ[I], R, V, I]],
                               derives_AT: List[Derive[AT[I], R, V, I]],
                               derives_Suc: List[Derive[Suc[I], R, V, I]],
+                              derives_RangeAs: List[Derive[RangeAs[R, I], R, V, I]],
                               derives_SameStrandAs: List[Derive[SameStrandAs[R], R, V, I]],
                               derives_DifferentStrandTo: List[Derive[DifferentStrandTo[R], R, V, I]],
                               derives_Strand: List[Derive[Strand[R], R, V, I]],
@@ -354,6 +375,7 @@ case class DeriveEnv[R, V, I](rules: DeriveRules[R, V, I],
   extends OrdDeriveEnv[R, V, I]
   with IndexDeriveEnv[R, V, I]
   with StrandDeriveEnv[R, V, I]
+  with RangeDeriveEnv[R, V, I]
   with LengthDeriveEnv[R, V, I]
   with DeriveEnvBase[R, V, I]
 
@@ -364,6 +386,7 @@ object DeriveEnv {
       rules.`a < b -| k(a < b)` ::
         rules.`a < b -| a @ i, b @ j, i < j` ::
         rules.`a < b -| suc(a, b)` ::
+        rules.`a < b -| RangeAs(r, a, b)` ::
         rules.`a < c -| a < b, b < c` ::
         rules.`a < c -| a < b, b <= c` ::
         rules.`a < c -| a <= b, b < c` ::
@@ -396,6 +419,10 @@ object DeriveEnv {
     derives_Suc =
       rules.`a suc b -| k(a suc b)` ::
         rules.`a suc b -| a @ i, b @ j | i+1=j` ::
+        Nil,
+
+    derives_RangeAs =
+      rules.`RangeAs(r, a, b) -| k(RangeAs(r, a, b))` ::
         Nil,
 
     derives_SameStrandAs =

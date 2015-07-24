@@ -181,16 +181,26 @@ object TellTestSuite extends TestSuite {
       }
 
       'range - {
-
         'implicits - {
-          implicitly[Tell[RangeAs[Symbol], RangeModel[Symbol, Symbol]]]
-          implicitly[Tell[RangeAs[Symbol], Model[Symbol, Symbol, String]]]
-          implicitly[Tell[RangeAs[Symbol], DerivationState[Symbol, Symbol, String]]]
+          implicitly[Tell[RangeAs[Symbol, String], RangeModel[Symbol, String]]]
+          implicitly[Tell[RangeAs[Symbol, String], Model[Symbol, Symbol, String]]]
+          implicitly[MonOp2[RangeAs, Symbol, String, (String, String)]]
+          implicitly[MonOp2[RangeAs, Symbol, Symbol, (Symbol, Symbol)]]
+          implicitly[Interpretation[Symbol, String, Model[Symbol, Symbol, String]]]
+          Interpretation.monOp2Interpretation[RangeAs, (Symbol, Symbol), (String, String), Symbol, Symbol, String]
+          implicitly[Interpretation[RangeAs[Symbol, Symbol], RangeAs[Symbol, String], Model[Symbol, Symbol, String]]]
+          implicitly[Tell[RangeAs[Symbol, Symbol], Model[Symbol, Symbol, String]]]
+          implicitly[Tell[RangeAs[Symbol, Symbol], DerivationState[Symbol, Symbol, String]]]
         }
 
         val m1 = m0 tell RangeAs('r, 'a, 'b)
 
-        assert(m1.range.rangeAs('r) contains ('a, 'b))
+        assert(m1.i.v2i contains 'a)
+        assert(m1.i.v2i contains 'b)
+        val aI = m1.i.v2i('a)
+        val bI = m1.i.v2i('b)
+
+        assert(m1.range.rangeAs('r) contains (aI, bI))
       }
     }
 

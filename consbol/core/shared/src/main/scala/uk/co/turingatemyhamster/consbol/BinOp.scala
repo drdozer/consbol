@@ -80,7 +80,7 @@ trait BinOp[O[_], T] {
 object MonOp {
 
   def apply[O[_], T, X](r: (T, X) => O[T], d: O[T] => Option[(T, X)]): MonOp[O, T, X] = new MonOp[O, T, X] {
-    override def recompose(tt: (T, X)): O[T] = r.tupled(tt)
+    override def recompose(tx: (T, X)): O[T] = r.tupled(tx)
 
     override def decompose(o: O[T]): (T, X) = d(o).get
   }
@@ -88,12 +88,27 @@ object MonOp {
   implicit def monop_strand[T]: MonOp[Strand, T, Orientation] = MonOp[Strand, T, Orientation](Strand.apply, Strand.unapply)
   implicit def monop_at[T]: MonOp[AT, T, Int] = MonOp[AT, T, Int](AT.apply, AT.unapply)
   implicit def monop_length[T]: MonOp[Length, T, Int] = MonOp[Length, T, Int](Length.apply, Length.unapply)
-  implicit def monop_rangeAt[T]: MonOp[RangeAs, T, (T, T)] = MonOp[RangeAs, T, (T, T)](
-    {case(r, (a, b)) => RangeAs(r, a, b)},
-    {case RangeAs(r, l, u) => some(r, (l, u))})
 }
 
 trait MonOp[O[_], T, X] {
   def decompose(o: O[T]): (T, X)
   def recompose(tx: (T, X)): O[T]
+}
+
+object MonOp2 {
+
+  def apply[O[_, _], T, U, X](r: (T, X) => O[T, U], d: O[T, U] => Option[(T, X)]) = new MonOp2[O, T, U, X] {
+    override def decompose(o: O[T, U]): (T, X) = d(o).get
+
+    override def recompose(tx: (T, X)): O[T, U] = r.tupled(tx)
+  }
+
+  implicit def monop_rangeAt[T, U]: MonOp2[RangeAs, T, U, (U, U)] = MonOp2[RangeAs, T, U, (U, U)](
+    {case(r, (a, b)) => RangeAs(r, a, b)},
+    {case RangeAs(r, l, u) => some(r, (l, u))})
+}
+
+trait MonOp2[O[_, _], T, U, X] {
+  def decompose(o: O[T, U]): (T, X)
+  def recompose(tx: (T, X)): O[T, U]
 }

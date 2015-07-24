@@ -39,6 +39,15 @@ object Tell
       φ.modify(m0 => m0 + (t -> (m0.getOrElse(t, Set()) + u)))(m)
     }
   }
+
+  def tell_monops2[A[_, _], T, U, X, M](φ: Lens[M, Map[T, Set[X]]])
+                                       (implicit op: MonOp2[A, T, U, X]): Tell[A[T, U], M] = new Tell[A[T, U], M]
+  {
+    override def apply(a: A[T, U], m: M): M = {
+      val (t, x) = op.decompose(a)
+      φ.modify(m0 => m0 + (t -> (m0.getOrElse(t, Set()) + x)))(m)
+    }
+  }
 }
 
 trait TellOrdModel {
@@ -105,8 +114,8 @@ trait TellLengthModel {
 
 trait TellRangeModel {
 
-  implicit def tell_rangeAs[T]: Tell[RangeAs[T], RangeModel[T, T]] =
-    Tell.tell_monops[RangeAs, T, (T, T), RangeModel[T, T]](RangeModel.rangeAs)
+  implicit def tell_rangeAs[R, I]: Tell[RangeAs[R, I], RangeModel[R, I]] =
+    Tell.tell_monops2[RangeAs, R, I, (I, I), RangeModel[R, I]](RangeModel.rangeAs)
 
 }
 
@@ -125,8 +134,8 @@ trait TellLowPriorityImplicits {
   implicit def tell_usingLengthModel[A[_], R, V, I](implicit t: Tell[A[R], LengthModel[R]]) =
     Tell.tell_on[A[R], Model[R, V, I], LengthModel[R]](Model.length)
 
-  implicit def tell_usingRangeModel[A[_], T, I](implicit t: Tell[A[T], RangeModel[T, T]]) =
-    Tell.tell_on[A[T], Model[T, T, I], RangeModel[T, T]](Model.range)
+  implicit def tell_usingRangeModel[A[_, _], R, V, I](implicit t: Tell[A[R, I], RangeModel[R, I]]) =
+    Tell.tell_on[A[R, I], Model[R, V, I], RangeModel[R, I]](Model.range)
 
 }
 
@@ -135,9 +144,20 @@ trait TellLowLowPriorityImplicits {
 
   implicit def tell_viModel[A[_], R, V, I]
   (implicit avI: Interpretation[A[V], A[I], Model[R, V, I]], t: Tell[A[I], Model[R, V, I]])
-  : Tell[A[V], Model[R, V, I]] = new Tell[A[V], Model[R, V, I]] {
+  : Tell[A[V], Model[R, V, I]] = new Tell[A[V], Model[R, V, I]]
+  {
     override def apply(a: A[V], m0: Model[R, V, I]): Model[R, V, I] = {
       val (a1, m1) = m0 interpretation a
+      m1 tell a1
+    }
+  }
+
+  implicit def tell_viModel2[A[_, _], R, V, I]
+  (implicit avI: Interpretation[A[R, V], A[R, I], Model[R, V, I]], t: Tell[A[R, I], Model[R, V, I]])
+  : Tell[A[R, V], Model[R, V, I]] = new Tell[A[R, V], Model[R, V, I]]
+  {
+    override def apply(a: A[R, V], m0: Model[R, V, I]): Model[R, V, I] = {
+      val (a1, m1) = avI(a, m0)
       m1 tell a1
     }
   }

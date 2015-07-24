@@ -8,7 +8,7 @@ import monocle.macros._
 case class Model[R, V, I](i: InterpModel[V, I],
                           ord: OrdModel[I],
                           index: IndexModel[I],
-                          range: RangeModel[R, V],
+                          range: RangeModel[R, I],
                           str: StrandModel[R],
                           length: LengthModel[R])
 {
@@ -69,4 +69,4 @@ case class StrandModel[R](strand: Map[R, Set[Orientation]] = Map.empty[R, Set[Or
 case class LengthModel[R](length: Map[R, Set[Int]] = Map.empty[R, Set[Int]])
 
 @Lenses
-case class RangeModel[R, V](rangeAs: Map[R, Set[(V, V)]] = Map.empty[R, Set[(V, V)]])
+case class RangeModel[R, I](rangeAs: Map[R, Set[(I, I)]] = Map.empty[R, Set[(I, I)]])
