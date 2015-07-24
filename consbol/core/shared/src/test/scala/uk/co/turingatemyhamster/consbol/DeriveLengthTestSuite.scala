@@ -5,7 +5,7 @@ import utest._
 /**
  * Created by nmrp3 on 20/07/15.
  */
-object DeriveLengthTestSuite extends TestSuite with DeriveTestSuite {
+object DeriveLengthTestSuite extends TestSuite with DeriveTestSuiteBase {
   val tests = TestSuite {
     import Tell._
     import Know._

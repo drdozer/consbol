@@ -1,8 +1,8 @@
 package uk.co.turingatemyhamster.consbol
 
-/**
- * Created by nmrp3 on 24/07/15.
- */
+import scalaz._
+import Scalaz._
+
 trait DeriveTestSuiteBase {
   implicit class DSOps[R, V, I](_ds0: DerivationState[R, V, I]) {
     def |- [A](a: A)(implicit d: Derive[A, R, V, I]) =

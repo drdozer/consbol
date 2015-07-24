@@ -4,7 +4,7 @@ import Derive._
 import uk.co.turingatemyhamster.consbol.util.FuncNameUtils._
 
 trait OrdDeriveEnv[R, V, I] {
-  self : DeriveEnvBase[R, V, I] =>
+  self : RangeDeriveEnv[R, V, I] with DeriveEnvBase[R, V, I] =>
 
   import rules._
 
@@ -26,51 +26,78 @@ trait OrdDeriveRules[R, V, I] {
 
   final lazy val `a < b -| k(a < b)` = known[LT, I]
 
-  final lazy val `a < c -| a < b, b <= c` = withEnv[LT[I]] { env => a =>
+  final lazy val ltRecursion: List[Derive[LT[I], R, V, I]] =
+    `a < c -| a < b, b <= c` ::
+      `a < c -| a <= b, b < c` ::
+      `a < c -| a < b, b < c` ::
+      Nil
+
+  final lazy val lteqRecursion: List[Derive[LT_EQ[I], R, V, I]] =
+    `a <= c -| a <= b, b <= c` ::
+      Nil
+
+
+  final lazy val `a < c -| a < b, b <= c` = withEnv[LT[I]] { env =>
     import env._
-    a.lhs.knowLHS[LT] (
+    newEnvA(env without ltRecursion without lteqRecursion) { a =>
+    a.lhs.deriveLHS[LT] (
       lhsD => Disproof1(a, lhsD),
-      lhsP => LT_EQ(lhsP.goal.rhs, a.rhs) derive (
+      newEnvP(env) { lhsP =>
+      LT_EQ(lhsP.goal.rhs, a.rhs) derive (
         rhsD => Disproof2(a, lhsP, rhsD),
         rhsP => Proof2(a, lhsP, rhsP)
       )
+      }
     )
+    }
   }
 
-  final lazy val `a < c -| a <= b, b < c` = withEnv[LT[I]] { env => a =>
+  final lazy val `a < c -| a <= b, b < c` = withEnv[LT[I]] { env =>
     import env._
+    newEnvA(env without ltRecursion without lteqRecursion) { a =>
     a.lhs.knowLHS[LT_EQ] (
       lhsD => Disproof1(a, lhsD),
-      lhsP => LT(lhsP.goal.rhs, a.rhs) derive (
+      newEnvP(env) { (lhsP: Proof[LT_EQ[I]]) =>
+      LT(lhsP.goal.rhs, a.rhs) derive (
         rhsD => Disproof2(a, lhsP, rhsD),
         rhsP => Proof2(a, lhsP, rhsP)
       )
+      }
     )
+    }
   }
 
 
-  final lazy val `a < c -| a < b, b < c` = withEnv[LT[I]] { env => a =>
+  final lazy val `a < c -| a < b, b < c` = withEnv[LT[I]] { env =>
     import env._
-    a.lhs.knowLHS[LT] (
+    newEnvA(env without ltRecursion without lteqRecursion) { a =>
+    a.lhs.deriveLHS[LT] (
       lhsD => Disproof1(a, lhsD),
+      newEnvP(env) {
       lhsP => LT(lhsP.goal.rhs, a.rhs) derive (
         rhsD => Disproof2(a, lhsP, rhsD),
         rhsP => Proof2(a, lhsP, rhsP)
       )
+      }
     )
+    }
   }
 
   final lazy val `a <= b -| k(a <= b)` = known[LT_EQ, I]
 
-  final lazy val `a <= c -| a <= b, b <= c` = withEnv[LT_EQ[I]] { env => a =>
+  final lazy val `a <= c -| a <= b, b <= c` = withEnv[LT_EQ[I]] { env =>
     import env._
+    newEnvA(env without ltRecursion without lteqRecursion) { a =>
     a.lhs.knowLHS[LT_EQ] (
       lhsD => Disproof1(a, lhsD),
+      newEnvP(env) {
       lhsP => LT_EQ(lhsP.goal.rhs, a.rhs) derive (
         rhsD => Disproof2(a, lhsP, rhsD),
         rhsP => Proof2(a, lhsP, rhsP)
       )
+      }
     )
+    }
   }
 
   final lazy val `a <= b -| a < b` = withEnv[LT_EQ[I]] { env => a =>

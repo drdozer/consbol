@@ -62,6 +62,16 @@ trait DeriveLowPriorityImpicits {
       p => DProof.interpreted(a, p)) -> ds }
    } (fn)
 
+  implicit def derive_usingInterpretation2[A[_, _], R, V, I]
+  (implicit
+    in: Interpretation[A[R, V], A[R, I], DerivationState[R, V, I]],
+    d: Derive[A[R, I], R, V, I],
+    fn: FuncName) = Derive[A[R, V], R, V, I] { a => ds0 =>
+      val (a1, ds1) = ds0 interpretation a
+      d(a1, ds1) map { case (p, ds) => p.fold(
+      p => DProof.interpreted2(a, p),
+      p => DProof.interpreted2(a, p)) -> ds }
+    } (fn)
 }
 
 
@@ -189,7 +199,10 @@ trait DeriveDSL[R, V, I] {
     f(ds0.env)(a)(ds0)
   }
 
-  def newEnv[A](env: DeriveEnv[R, V, I])(fp: Proof[A] => DerivationStep[A, R, V, I]): Proof[A] => DerivationStep[A, R, V, I] = p => ds0 =>
+  def newEnvA[A, B](env: DeriveEnv[R, V, I])(fa: A => DerivationStep[B, R, V, I]): A => DerivationStep[B, R, V, I] = a => ds0 =>
+    fa(a)(ds0.copy(env = env)) map { case (dp, ds1) => (dp, ds1.copy(env = ds0.env)) }
+
+  def newEnvP[A, B](env: DeriveEnv[R, V, I])(fp: Proof[A] => DerivationStep[B, R, V, I]): Proof[A] => DerivationStep[B, R, V, I] = p => ds0 =>
     fp(p)(ds0.copy(env = env)) map { case (dp, ds1) => (dp, ds1.copy(env = ds0.env)) }
 
   def known[A[_], T]
@@ -318,139 +331,4 @@ trait DeriveDSL[R, V, I] {
                   (implicit w: DeriveEnvWithout[A, R, V, I]): DeriveEnv[R, V, I] =
       w(_env, dropList)
   }
-}
-
-trait DeriveEnvWithout[A, R, V, I] {
-  def apply(env: DeriveEnv[R, V, I], dropList: List[Derive[A, R, V, I]]): DeriveEnv[R, V, I]
-}
-
-object DeriveEnvWithout {
-  implicit def withoutSameStrandAs[R, V, I]: DeriveEnvWithout[SameStrandAs[R], R, V, I] =
-    new DeriveEnvWithout[SameStrandAs[R], R, V, I] {
-      override def apply(env: DeriveEnv[R, V, I], dropList: List[Derive[SameStrandAs[R], R, V, I]]): DeriveEnv[R, V, I] =
-        env.copy(derives_SameStrandAs = env.derives_SameStrandAs diff dropList)
-    }
-
-  implicit def withoutDifferentStrandTo[R, V, I]: DeriveEnvWithout[DifferentStrandTo[R], R, V, I] =
-    new DeriveEnvWithout[DifferentStrandTo[R], R, V, I] {
-      override def apply(env: DeriveEnv[R, V, I], dropList: List[Derive[DifferentStrandTo[R], R, V, I]]): DeriveEnv[R, V, I] =
-        env.copy(derives_DifferentStrandTo = env.derives_DifferentStrandTo diff dropList)
-    }
-}
-
-trait DeriveRules[R, V, I]
-  extends OrdDeriveRules[R, V, I]
-  with IndexDeriveRules[R, V, I]
-  with StrandDeriveRules[R, V, I]
-  with RangeDeriveRules[R, V, I]
-  with LengthDeriveRules[R, V, I]
-  with DeriveDSL[R, V, I]
-
-object DeriveRules {
-  def apply[R, V, I](implicit _vi: InterpretationSingleton[V, I], _unify: UnifyI[I]): DeriveRules[R, V, I] =
-    new DeriveRules[R, V, I]
-    {
-      override implicit final def vi: InterpretationSingleton[V, I] = _vi
-
-      override implicit final def unify: UnifyI[I] = _unify
-    }
-}
-
-trait DeriveEnvBase[R, V, I] {
-  val rules: DeriveDSL[R, V, I]
-}
-
-case class DeriveEnv[R, V, I](rules: DeriveRules[R, V, I],
-                              derives_LT: List[Derive[LT[I], R, V, I]],
-                              derives_LT_EQ: List[Derive[LT_EQ[I], R, V, I]],
-                              derives_EQ: List[Derive[EQ[I], R, V, I]],
-                              derives_NOT_EQ: List[Derive[NOT_EQ[I], R, V, I]],
-                              derives_AT: List[Derive[AT[I], R, V, I]],
-                              derives_Suc: List[Derive[Suc[I], R, V, I]],
-                              derives_RangeAs: List[Derive[RangeAs[R, I], R, V, I]],
-                              derives_SameStrandAs: List[Derive[SameStrandAs[R], R, V, I]],
-                              derives_DifferentStrandTo: List[Derive[DifferentStrandTo[R], R, V, I]],
-                              derives_Strand: List[Derive[Strand[R], R, V, I]],
-                              derives_Length: List[Derive[Length[R], R, V, I]])
-  extends OrdDeriveEnv[R, V, I]
-  with IndexDeriveEnv[R, V, I]
-  with StrandDeriveEnv[R, V, I]
-  with RangeDeriveEnv[R, V, I]
-  with LengthDeriveEnv[R, V, I]
-  with DeriveEnvBase[R, V, I]
-
-object DeriveEnv {
-  def apply[R, V, I](rules: DeriveRules[R, V, I]) = new DeriveEnv[R, V, I](
-    rules = rules,
-    derives_LT =
-      rules.`a < b -| k(a < b)` ::
-        rules.`a < b -| a @ i, b @ j, i < j` ::
-        rules.`a < b -| suc(a, b)` ::
-        rules.`a < b -| RangeAs(r, a, b)` ::
-        rules.`a < c -| a < b, b < c` ::
-        rules.`a < c -| a < b, b <= c` ::
-        rules.`a < c -| a <= b, b < c` ::
-        Nil,
-    derives_LT_EQ =
-      rules.`a <= b -| k(a <= b)` ::
-        rules.`a <= b -| a @ i, b @ j, i <= j` ::
-        rules.`a <= b -| a < b` ::
-        rules.`a <= b -| ∃c: b suc c. a < c` ::
-        rules.`a <= c -| a <= b, b <= c` ::
-        Nil,
-    derives_EQ =
-      rules.`a = b -| a @ i, b @ j, i = j` ::
-        rules.`a = b -| a <=b, b <= a` ::
-        rules.`a = b -| ∃c: a suc c, b suc c` ::
-        rules.`a = b -| ∃c: c suc a, c suc b` ::
-        Nil,
-    derives_NOT_EQ =
-      rules.`a != b -| k(a != b)` ::
-        rules.`a != b -| a @ i, b @ j, i != j` ::
-        rules.`a != b -| a < b` ::
-        rules.`a != b -| b < a` ::
-        Nil,
-
-    derives_AT =
-      rules.`a @ i -| k(a @ i)` ::
-        rules.`a @ i -| ∃b: k(a suc b), b @ (i+1)` ::
-        rules.`a @ i -| ∃b: k(b suc a), b @ (i-1)` ::
-        Nil,
-    derives_Suc =
-      rules.`a suc b -| k(a suc b)` ::
-        rules.`a suc b -| a @ i, b @ j | i+1=j` ::
-        Nil,
-
-    derives_RangeAs =
-      rules.`RangeAs(r, a, b) -| k(RangeAs(r, a, b))` ::
-        Nil,
-
-    derives_SameStrandAs =
-      rules.`r±s -| k(r±s) or k(s±r)` ::
-        rules.`r±s -| +r, +s` ::
-        rules.`r±s -| -r, -s` ::
-        rules.`r±s -| ∃t: k(r±t). t±s` ::
-        rules.`r±s -| ∃t: k(r∓t). t∓s` ::
-        rules.`r±s -| ∃t: k(t±r). t±s` ::
-        rules.`r±s -| ∃t: k(t∓r). t∓s` ::
-        Nil,
-    derives_DifferentStrandTo =
-      rules.`r∓s -| k(r∓s) or k(s∓r)` ::
-        rules.`r∓s -| +r, -s` ::
-        rules.`r∓s -| -r, +s` ::
-        rules.`r∓s -| ∃t: k(r∓t). t±s` ::
-        rules.`r∓s -| ∃t: k(r±t). t∓s` ::
-        rules.`r∓s -| ∃t: k(t∓r). t±s` ::
-        rules.`r∓s -| ∃t: k(t±r). t∓s` ::
-        Nil,
-    derives_Strand =
-      rules.`±r -| k(±r)` ::
-        rules.`±r -| ∃s: ±s. r±s` ::
-        rules.`±r -| ∃s: ∓s, r∓s` ::
-        Nil,
-
-    derives_Length =
-      rules.`Length r -| k(Length r)` ::
-      Nil
-  )
 }

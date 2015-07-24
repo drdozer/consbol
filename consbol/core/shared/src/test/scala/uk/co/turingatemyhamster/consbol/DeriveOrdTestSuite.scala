@@ -6,7 +6,7 @@ import scalaz._
 import scalaz.Scalaz._
 import uk.co.turingatemyhamster.consbol.util.FuncNameUtils._
 
-object DeriveOrdTestSuite extends TestSuite with DeriveTestSuite {
+object DeriveOrdTestSuite extends TestSuite with DeriveTestSuiteBase {
 
   val tests = TestSuite {
     import Tell._

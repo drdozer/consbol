@@ -37,7 +37,7 @@ trait StrandDeriveRules[R, V, I] {
     import env._
     `± ⇒ ∃r: ±r`(a.orient) (
       lhsD => Disproof1(a, lhsD),
-      newEnv(env without sameFromStrand without differentFromStrand) {
+      newEnvP(env without sameFromStrand without differentFromStrand) {
         lhsP => SameStrandAs(a.range, lhsP.goal.range) derive (
           rhsD => Disproof2(a, lhsP, rhsD),
           rhsP => Proof2(a, lhsP, rhsP)
@@ -50,7 +50,7 @@ trait StrandDeriveRules[R, V, I] {
     import env._
     `± ⇒ ∃r: ±r`(a.orient.inverse) (
       lhsD => Disproof1(a, lhsD),
-      newEnv(env without sameFromStrand without differentFromStrand) {
+      newEnvP(env without sameFromStrand without differentFromStrand) {
         lhsP => DifferentStrandTo(a.range, lhsP.goal.range) derive (
           rhsD => Disproof2(a, lhsP, rhsD),
           rhsP => resultP(Proof2(a, lhsP, rhsP))(Tell.tell_ds)
