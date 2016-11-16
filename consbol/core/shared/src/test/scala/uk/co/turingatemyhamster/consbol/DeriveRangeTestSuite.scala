@@ -58,6 +58,18 @@ object DeriveRangeTestSuite extends TestSuite with DeriveTestSuiteBase {
         'got_goal - assert(!d.isEmpty.value)
         'goal_is_correct - assert(d.head.value.goal == LT('a, 'f))
       }
+
+      'length - {
+        val ds1 = ds0 tell
+          RangeAs('r, 'a, 'b) tell
+          AT('a, 11) tell
+          AT('b, 20)
+
+        val d = ds1 |- Length('r, 10)
+
+        'got_goal - assert(!d.isEmpty.value)
+        'goal_is_correct - assert(d.head.value.goal == Length('r, 10))
+      }
     }
   }
 }
